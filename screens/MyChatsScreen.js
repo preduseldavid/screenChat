@@ -17,6 +17,10 @@ import Colors from '../constants/Colors';
 import { ListItem } from 'react-native-elements';
 import HideWithKeyboard from 'react-native-hide-with-keyboard';
 import AsyncStorage from '@react-native-community/async-storage';
+import DeviceInfo from 'react-native-device-info';
+
+var Realtime = require("ably").Realtime;
+var ably, channel;
 
 export default class MyChatsScreen extends React.Component {
   static navigationOptions = {
@@ -26,8 +30,9 @@ export default class MyChatsScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-      searchText: '',
+      uniqueId: DeviceInfo.getUniqueID(),
       myChatsList: [],
+      update: true,
     };
   };
 
@@ -48,7 +53,9 @@ export default class MyChatsScreen extends React.Component {
         title={item.media_type == 'movie' ? item.title : item.name}
         titleStyle={styles.listTitle}
         subtitle={item.media_type == 'person' ? 'Person' : (item.media_type == 'movie' ? 'Movie' : 'Tv Show')}
+        rightSubtitle={item.hasNewMessages ? 'NEW MESSAGES' : ''}
         subtitleStyle={styles.listSubtitle}
+        rightSubtitleStyle={styles.listSubtitle}
         leftIcon={{ name: item.media_type }}
         pad={8}
       />
@@ -65,11 +72,49 @@ export default class MyChatsScreen extends React.Component {
 
       console.log(list);
 
+      for (var i = 0 ; i < list.length; ++i) {
+        var item = list[i];
+        this.hasNewMessages(list[i], i);
+        console.log(item);
+      }
+
       this.setState({myChatsList: list.reverse()});
-      console.log(this.state);
     } catch (error) {
       // Error retrieving data
     }
+  };
+
+  hasNewMessages = async (item, index) => {
+
+    let ret = 0;
+    let channelName = 'screenChat:_dev_en_' + (item.id).toString();
+    ably = new Realtime({
+      key: "TPURNw.X4pdwg:1gMMoqxLUl30a7lm",
+      clientId: this.state.uniqueId
+    });
+    channel = ably.channels.get(channelName);
+
+    global.classObj = this;
+    await channel.history({limit: 1}, function(err, resultPage) {
+      if(err) {
+        console.log('Unable to get channel history; err = ' + err.message);
+        ret = 0;
+      } else {
+        AsyncStorage.getItem("msgTimestamps")
+          .then(timestamps => {
+            if (timestamps != null) {
+              timestamps = JSON.parse(timestamps);
+              if (timestamps[item.id] < resultPage.items[0].timestamp)
+                ret = 1;
+              item.hasNewMessages = ret;
+              global.classObj.setState({update: !global.classObj.state.update});
+            }
+          })
+          .done();
+      }
+    });
+
+    return ret;
   };
 
   render() {
@@ -79,7 +124,7 @@ export default class MyChatsScreen extends React.Component {
           keyboardShouldPersistTaps='handled'
           keyExtractor={this.keyExtractor}
           data={this.state.myChatsList}
-          extraData={this.state.myChatsList}
+          extraData={this.state}
           renderItem={this.renderItem}
         />
       </ScrollView>
@@ -93,7 +138,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   listItem: {
-    paddingLeft: '1%',
+    paddingLeft: '3%',
     borderBottomWidth: 1,
     borderBottomColor: Colors.lightGray3,
   },

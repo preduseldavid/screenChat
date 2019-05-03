@@ -11,6 +11,8 @@ import {Platform, StyleSheet, Text, View} from 'react-native';
 import Header from './components/Header';
 import AppNavigator from './navigation/AppNavigator';
 import SplashScreen from 'react-native-splash-screen';
+import Username from './screens/UsernameScreen';
+import AsyncStorage from '@react-native-community/async-storage';
 
 
  // Igonore warnings
@@ -27,13 +29,54 @@ console.warn = message => {
 
 type Props = {};
 export default class App extends Component<Props> {
+
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: null,
+    };
+    this.updateUsername = this.updateUsername.bind(this);
+  }
+
+  componentDidMount() {
+    // do stuff while splash screen is shown
+    // After having done stuff (such as async tasks) hide the splash screen
+
+    AsyncStorage.getItem("username")
+    .then(value => {
+      this.setState({ username: value });
+    })
+    .done(() => {
+      SplashScreen.hide();
+    });
+
+    
+  }
+
+
+
+  updateUsername = (newUsername) => {
+    console.log(newUsername);
+    AsyncStorage.setItem("username", newUsername);
+    this.setState({ username: newUsername });
+  };
+
+
+
   render() {
-    return (
+    if (this.state.username != null)
+      return (
         <View style={styles.container}>
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-          <AppNavigator />
+          <AppNavigator/>
         </View>
       );
+    else 
+      return (
+          <Username updateUsername={this.updateUsername}/>
+      );
+    
   }
 }
 

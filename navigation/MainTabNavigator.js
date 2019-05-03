@@ -31,21 +31,20 @@ const tabBarOptions = {
     upperCaseLabel: false,
     pressColor: 'gray',
     style: {
-      backgroundColor: 'white',
+      backgroundColor: Colors.customYellow,
       elevation: 1,
     },
-    activeTintColor: Colors.customYellow,
+    activeTintColor: 'white',
     inactiveTintColor: Colors.customGray,
     pressColor: Colors.customGray,
     indicatorStyle: {
-      backgroundColor: Colors.customYellow,
+      backgroundColor: 'white',
     },
     labelStyle: {
       fontFamily: 'Lato-Bold',
       fontSize: 16,
     },
     tabStyle: {
-      height: 40,
     },
   }
 };

@@ -3,6 +3,7 @@ import { createAppContainer, createSwitchNavigator, createStackNavigator, StackA
 
 import MainTabNavigator from './MainTabNavigator';
 import MovieChatScreen from '../screens/MovieChatScreen';
+import UsernameScreen from '../screens/UsernameScreen';
 
 import Colors from '../constants/Colors';
 import { Icon, Image } from 'react-native-elements';
@@ -23,25 +24,7 @@ const MainStack = createStackNavigator({
   MainTab: {
     screen: MainTabNavigator,
     navigationOptions: {
-	    headerStyle: {
-	    	elevation: 0,
-	      backgroundColor: Colors.customYellow,
-	      height: 40,
-	    },
-	    headerLeft:(
-	      <TouchableOpacity onPress={() => StackActions.push({ routeName: 'MovieChat' })}>
-	        <Image style={styles.headerLogo} source={require('../assets/images/logo-white.png')} />
-	      </TouchableOpacity>
-	    ),
-	    headerRight: (
-	      <TouchableOpacity style={{ marginRight: 6 }} onPress={this.navigateBack}>
-	        <Icon
-	          name='menu'
-	          size={30}
-	          color='white'
-	        />
-	      </TouchableOpacity>
-	    ),
+	    header: null,
     },
   }
 });

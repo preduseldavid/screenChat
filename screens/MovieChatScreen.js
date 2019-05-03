@@ -10,6 +10,7 @@ import {
   TextInput,
   FlatList,
   Button,
+  ImageBackground,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import Colors from '../constants/Colors';
@@ -29,21 +30,19 @@ export default class MovieChatScreen extends Component {
     return {
       title: title,
       headerStyle: {
-        elevation: 0,
-        backgroundColor: Colors.customYellow,
-        height: 40,
+        backgroundColor: Colors.lightGray3,
       },
       headerTitleStyle: { 
         textAlign:"center", 
         flex:1,
-        color: 'white',
+        color: Colors.customYellow,
       },
       headerLeft:(
         <TouchableOpacity style={{ marginLeft: 6 }} onPress={() => navigation.navigate({ routeName: 'Search'})}>
           <Icon
             name='arrow-back'
             size={30}
-            color='white'
+            color={Colors.customYellow}
           />
         </TouchableOpacity>
       ),
@@ -52,7 +51,7 @@ export default class MovieChatScreen extends Component {
           <Icon
             name='more-vert'
             size={30}
-            color='white'
+            color={Colors.customYellow}
           />
         </TouchableOpacity>
         
@@ -63,24 +62,64 @@ export default class MovieChatScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: 'Nobody',
+      username: null,
       uniqueId: DeviceInfo.getUniqueID(),
       sendMessageText: '',
       msgData: [],
+      lastMsgTimestamp: null,
     };
     sendMessageInput = null;
     movie = this.props.navigation.state.params.movie;
+    this.movie = this.props.navigation.state.params.movie;
     flatList = null;
   }
 
   componentDidMount = () => {
     MovieChatScreenGlobal = this;
     this.subscribe();
+
+    AsyncStorage.getItem("username")
+    .then(value => {
+      this.setState({ username: value });
+    })
+    .done();
+
+    // get last msg timestamp
+    AsyncStorage.getItem("msgTimestamps")
+    .then(timestamps => {
+      if (timestamps != null) {
+        console.log(timestamps);
+        timestamps = JSON.parse(timestamps);
+        this.setState({lastMsgTimestamp: timestamps[global.movie.id]});
+      }
+      else 
+        timestamps = [];
+    })
+    .done();
   };
 
   navigateBack = () => {
     console.log(this.props.navigation);
     this.props.navigation.navigate({ routeName: 'Search'});
+  };
+
+  _updateLastMsgTimestamp = async (timestamp) => {
+    console.log(this.state.lastMsgTimestamp);
+    console.log(timestamp);
+    console.log(this.state.lastMsgTimestamp < timestamp);
+    if (this.state.lastMsgTimestamp == null || this.state.lastMsgTimestamp < timestamp) {
+      console.log(timestamp);
+      this.setState({lastMsgTimestamp: timestamp});
+
+      var timestamps = await AsyncStorage.getItem('msgTimestamps');
+      if (timestamps != null)
+        timestamps = JSON.parse(timestamps);
+      else 
+        timestamps = [];
+      timestamps[global.movie.id] = timestamp;
+      await AsyncStorage.setItem('msgTimestamps', JSON.stringify(timestamps));
+
+    }
   };
 
   _storeData = async () => {
@@ -91,7 +130,8 @@ export default class MovieChatScreen extends Component {
         list = JSON.parse(list);
       else 
         list = [];
-
+      
+       // already stored
       for (var i = 0; i < list.length; ++i)
         if (list[i].id == global.movie.id)
           return;
@@ -105,7 +145,7 @@ export default class MovieChatScreen extends Component {
   };
 
   subscribe = () => {
-    let channelName = 'screenChat:en_' + (this.props.navigation.state.params.movie.id).toString();
+    let channelName = 'screenChat:_dev_en_' + (this.props.navigation.state.params.movie.id).toString();
     ably = new Realtime({
       key: "TPURNw.X4pdwg:1gMMoqxLUl30a7lm",
       clientId: this.state.uniqueId
@@ -114,10 +154,13 @@ export default class MovieChatScreen extends Component {
     console.log(channelName);
     
     // Get live message
-    channel.subscribe("message", msg => {
+    channel.subscribe(msg => {
+      msg.data = JSON.parse(msg.data);
       var newMsgData = this.state.msgData;
       newMsgData.push(msg);
       this.setState({ msgData: newMsgData });
+
+      this._updateLastMsgTimestamp(msg.timestamp);
 
       // this msg is mine, I wrote to this chat => store it to my chats
       if (msg.clientId === this.state.uniqueId) {
@@ -126,16 +169,34 @@ export default class MovieChatScreen extends Component {
       }
     });
 
-    channel.attach(function() {
-      channel.history(function(err, resultPage) {
+
+      channel.history({limit: 10}, function(err, resultPage) {
         if(err) {
           console.log('Unable to get channel history; err = ' + err.message);
         } else {
           console.log(resultPage);
+          var length = resultPage.items.length;
+          for (var i = 0; i < resultPage.items.length; ++i) {
+            resultPage.items[i].data = JSON.parse(resultPage.items[i].data);
+          }
+          console.log(resultPage);
+          console.log(resultPage.items[0]);
+          MovieChatScreenGlobal._updateLastMsgTimestamp(resultPage.items[0].timestamp);
           MovieChatScreenGlobal.setState({ msgData: resultPage.items.reverse() });
         }
+
+        if (0 && resultPage.hasNext()) {
+          resultPage.next(function(err, nextPage) {
+            var oldMsgData = MovieChatScreenGlobal.state.msgData;
+            for (var i = 0; i < nextPage.items.length; ++i) {
+              nextPage.items[i].data = JSON.parse(nextPage.items[i].data);
+              oldMsgData.unshift(nextPage.items[i]);
+            }
+            console.log(oldMsgData);
+            MovieChatScreenGlobal.setState({ msgData: oldMsgData });
+          });
+        }
       });
-    });
 
   };
 
@@ -150,7 +211,11 @@ export default class MovieChatScreen extends Component {
       return;
 
     this.sendMessageInput.clear();
-    channel.publish('message', this.state.sendMessageText, function(err) {
+    let msg = {
+      username: this.state.username,
+      text: this.state.sendMessageText
+    };
+    channel.publish('', JSON.stringify(msg), function(err) {
       if(err) {
         console.log('Unable to publish message; err = ' + err.message);
       } else {
@@ -173,7 +238,13 @@ export default class MovieChatScreen extends Component {
 
     return (
       <View style={styles.container}>
-        <FlatList style={styles.list}
+        <ImageBackground 
+          source={{ uri: (this.movie.media_type == 'person' 
+            ? 'http://image.tmdb.org/t/p/w300' + this.movie.profile_path
+            : 'http://image.tmdb.org/t/p/w300' + this.movie.poster_path)}} 
+          style={styles.posterImg}
+        />
+      <FlatList style={styles.list}
           onContentSizeChange={() => this.flatList.scrollToEnd({animated: true})}
           ref={component => this.flatList = component}
           data={this.state.msgData}
@@ -189,7 +260,8 @@ export default class MovieChatScreen extends Component {
             return (
               <View style={[styles.item, itemStyle]}>
                 <View style={[styles.balloon]}>
-                  <Text style={[itemText]}>{item.data}</Text>
+                {inMessage && <Text style={styles.usernameTxt}>{item.data.username}</Text>}
+                  <Text style={[itemText]}>{item.data.text}</Text>
                 </View>
               </View>
             )
@@ -217,7 +289,14 @@ export default class MovieChatScreen extends Component {
 
 const styles = StyleSheet.create({
   container:{
-    flex:1
+    flex:1,
+    backgroundColor: '#a9a9a9',
+  },
+  posterImg: {
+    width: '100%', 
+    height: '100%',
+    opacity: 0.4,
+    position: 'absolute',
   },
   list:{
     paddingHorizontal: 5,
@@ -225,11 +304,8 @@ const styles = StyleSheet.create({
   footer:{
     flexDirection: 'row',
     height:60,
-    backgroundColor: 'white',
     paddingHorizontal:10,
     padding:5,
-    borderTopWidth: 1,
-    borderTopColor: Colors.lightGray2
   },
   btnSend:{
     width:40,
@@ -266,6 +342,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   itemIn: {
+    flexDirection: 'row',
     alignSelf: 'flex-start',
     backgroundColor: Colors.lightGray3,
     borderBottomRightRadius:10,
@@ -273,26 +350,36 @@ const styles = StyleSheet.create({
   },
   itemOut: {
     alignSelf: 'flex-end',
-    backgroundColor: Colors.customYellow,
+    backgroundColor: Colors.customYellowLight,
     borderBottomLeftRadius:10,
     borderTopLeftRadius:10,
   },
+  usernameTxt: {
+    alignSelf: 'flex-start',
+    color: Colors.customYellow,
+    fontSize:13,
+    marginLeft: -5,
+    marginTop: -12,
+  },
   itemInText: {
-    color: 'black'
+    color: 'black',
+    fontSize:15,
   },
   itemOutText: {
-    color: 'white'
+    color: 'black',
+    fontSize:15,
   },
   time: {
     alignSelf: 'flex-end',
     margin: 10,
     fontSize:12,
-    color: Colors.lightGray3,
+    color: Colors.lightGray2,
   },
   item: {
     marginVertical: 4,
     flex: 1,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     padding:2,
   },
 }); 

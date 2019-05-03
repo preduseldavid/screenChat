@@ -15,6 +15,7 @@ import { SearchBar } from 'react-native-elements';
 import Colors from '../constants/Colors';
 import { ListItem } from 'react-native-elements';
 import HideWithKeyboard from 'react-native-hide-with-keyboard';
+import SplashScreen from 'react-native-splash-screen';
 
 export default class SearchScreen extends React.Component {
   static navigationOptions = {
@@ -28,6 +29,19 @@ export default class SearchScreen extends React.Component {
       searchData: [],
     };
   }
+
+  componentDidMount() {
+    
+  }
+
+  _getUsername = () => {
+    AsyncStorage.getItem("userName")
+      .then(value => {
+        this.setState({ user: value });
+        this.subscribe();
+      })
+      .done();
+  };
 
   keyExtractor = (item, index) => index.toString();
 
@@ -58,7 +72,7 @@ export default class SearchScreen extends React.Component {
             inputContainerStyle={styles.searchInputContainer} 
             onChangeText={text => this._searchBarChange(text)}
             value={this.state.searchText}
-            placeholder={'Search Movie, Tv Show...'}
+            placeholder={'Search Movie, Tv Show, Actor...'}
             placeholderTextColor={Colors.lightGray1}
             inputStyle={styles.searchInput}
           />
@@ -104,6 +118,7 @@ export default class SearchScreen extends React.Component {
           //isLoading: false,
           searchData: responseJson.results,
         }, function(){
+          console.log(responseJson);
         });
 
       })
@@ -139,7 +154,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.customYellow
   },
   searchInput: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Lato-Regular',
   },
   searchLogo: {
