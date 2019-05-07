@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -17,12 +17,28 @@ import Colors from '../constants/Colors';
 import { Icon } from 'react-native-elements';
 import AsyncStorage from '@react-native-community/async-storage';
 
+// somewhere in your app
+import {
+  Menu,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+} from 'react-native-popup-menu';
 
-var Realtime = require("ably").Realtime;
-var ably, channel;
+
+var channel;
 var MovieChatScreenGlobal;
 
-export default class MovieChatScreen extends Component {
+export default class MovieChatScreen extends React.Component {
+
+  changeUsername = () => {
+    this.props.navigation.navigate({ routeName: 'Username', params: {redirectSuccess: 'MovieChat'}});
+  };
+
+  deleteChat = () => {
+
+  };
+
   static navigationOptions = ({ navigation }) => {
     var item = navigation.getParam('movie');
     global.movie = item;
@@ -38,7 +54,7 @@ export default class MovieChatScreen extends Component {
         color: Colors.customYellow,
       },
       headerLeft:(
-        <TouchableOpacity style={{ marginLeft: 6 }} onPress={() => navigation.navigate({ routeName: 'Search'})}>
+        <TouchableOpacity style={{ marginLeft: 6 }} onPress={() => navigation.goBack(null)}>
           <Icon
             name='arrow-back'
             size={30}
@@ -47,14 +63,24 @@ export default class MovieChatScreen extends Component {
         </TouchableOpacity>
       ),
       headerRight: (
-        <TouchableOpacity style={{ marginRight: 6 }} onPress={this.navigateBack}>
-          <Icon
-            name='more-vert'
-            size={30}
-            color={Colors.customYellow}
-          />
-        </TouchableOpacity>
-        
+        <Menu>
+        <MenuTrigger>
+              <Icon
+                name='more-vert'
+                size={30}
+                color={Colors.customYellow}
+              />
+          </MenuTrigger>
+
+          <MenuOptions>
+            <MenuOption onSelect={() => MovieChatScreenGlobal.changeUsername()} >
+              <Text style={{color: 'black', fontSize: 16, paddingVertical: 10}}>Change Username</Text>
+            </MenuOption>
+            <MenuOption onSelect={() => MovieChatScreenGlobal.deleteChat()} >
+              <Text style={{color: 'black', fontSize: 16, paddingVertical: 10}}>Delete Chat</Text>
+            </MenuOption>
+          </MenuOptions>
+        </Menu>
       ),
     };
   };
@@ -97,6 +123,8 @@ export default class MovieChatScreen extends Component {
     })
     .done();
   };
+
+
 
   navigateBack = () => {
     console.log(this.props.navigation);
@@ -146,11 +174,7 @@ export default class MovieChatScreen extends Component {
 
   subscribe = () => {
     let channelName = 'screenChat:_dev_en_' + (this.props.navigation.state.params.movie.id).toString();
-    ably = new Realtime({
-      key: "TPURNw.X4pdwg:1gMMoqxLUl30a7lm",
-      clientId: this.state.uniqueId
-    });
-    channel = ably.channels.get(channelName);
+    channel = global.ably.channels.get(channelName);
     console.log(channelName);
     
     // Get live message
@@ -180,8 +204,9 @@ export default class MovieChatScreen extends Component {
             resultPage.items[i].data = JSON.parse(resultPage.items[i].data);
           }
           console.log(resultPage);
-          console.log(resultPage.items[0]);
-          MovieChatScreenGlobal._updateLastMsgTimestamp(resultPage.items[0].timestamp);
+          console.log(resultPage.items);
+          if (resultPage.items.length > 0)
+            MovieChatScreenGlobal._updateLastMsgTimestamp(resultPage.items[0].timestamp);
           MovieChatScreenGlobal.setState({ msgData: resultPage.items.reverse() });
         }
 

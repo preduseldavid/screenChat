@@ -13,6 +13,8 @@ import AppNavigator from './navigation/AppNavigator';
 import SplashScreen from 'react-native-splash-screen';
 import Username from './screens/UsernameScreen';
 import AsyncStorage from '@react-native-community/async-storage';
+import DeviceInfo from 'react-native-device-info';
+import { MenuProvider } from 'react-native-popup-menu';
 
 
  // Igonore warnings
@@ -26,6 +28,8 @@ console.warn = message => {
   }
 };
 
+var Realtime = require("ably").Realtime;
+
 
 type Props = {};
 export default class App extends Component<Props> {
@@ -35,6 +39,7 @@ export default class App extends Component<Props> {
     super(props);
     this.state = {
       username: null,
+      uniqueId: DeviceInfo.getUniqueID(),
     };
     this.updateUsername = this.updateUsername.bind(this);
   }
@@ -42,6 +47,11 @@ export default class App extends Component<Props> {
   componentDidMount() {
     // do stuff while splash screen is shown
     // After having done stuff (such as async tasks) hide the splash screen
+
+    global.ably = new Realtime({
+      key: "TPURNw.X4pdwg:1gMMoqxLUl30a7lm",
+      clientId: this.state.uniqueId
+    });
 
     AsyncStorage.getItem("username")
     .then(value => {
@@ -67,14 +77,16 @@ export default class App extends Component<Props> {
   render() {
     if (this.state.username != null)
       return (
-        <View style={styles.container}>
-          {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-          <AppNavigator/>
-        </View>
+        <MenuProvider>
+          <View style={styles.container}>
+            {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+            <AppNavigator/>
+          </View>
+        </MenuProvider>
       );
     else 
       return (
-          <Username updateUsername={this.updateUsername}/>
+          <Username noBack updateUsername={this.updateUsername}/>
       );
     
   }

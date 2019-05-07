@@ -18,8 +18,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import SplashScreen from 'react-native-splash-screen';
 
 
-var Realtime = require("ably").Realtime;
-var ably, channel;
+var channel;
 var MovieChatScreenGlobal;
 
 export default class MovieChatScreen extends Component {
@@ -38,10 +37,35 @@ export default class MovieChatScreen extends Component {
   componentDidMount() {
   }
 
+  updateUsername = (newUsername) => {
+    console.log(newUsername);
+    AsyncStorage.setItem("username", newUsername);
+    this.setState({ username: newUsername });
+    if (this.props.navigation) {
+      redirectSuccess = this.props.navigation.state.params.redirectSuccess;
+      this.props.navigation.navigate({ routeName: redirectSuccess});
+    }
+    else 
+      this.props.updateUsername(newUsername);
+  };
+
   render() {
+
+    var usernameRequired = this.props.noBack == null;
+    var backButton;
+
+    if (usernameRequired)
+      backButton = <TouchableOpacity style={{ marginLeft: 6 }} onPress={() => this.props.navigation.goBack(null)}>
+          <Icon
+            name='arrow-back'
+            size={30}
+            color={Colors.customYellow}
+          />
+        </TouchableOpacity>;
 
     return (
       <View style={styles.container}>
+        {backButton}
         <TextInput
           value={this.state.txtInput}
           style={styles.usernameInput}
@@ -51,7 +75,7 @@ export default class MovieChatScreen extends Component {
 
         <Button
           style={styles.submitBtn}
-          onPress={() => this.props.updateUsername(this.state.txtInput)}
+          onPress={() => this.updateUsername(this.state.txtInput)}
           title="NEXT"
           color={Colors.customYellow}
         />

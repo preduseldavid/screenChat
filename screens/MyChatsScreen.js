@@ -19,8 +19,7 @@ import HideWithKeyboard from 'react-native-hide-with-keyboard';
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 
-var Realtime = require("ably").Realtime;
-var ably, channel;
+var channel;
 
 export default class MyChatsScreen extends React.Component {
   static navigationOptions = {
@@ -88,11 +87,7 @@ export default class MyChatsScreen extends React.Component {
 
     let ret = 0;
     let channelName = 'screenChat:_dev_en_' + (item.id).toString();
-    ably = new Realtime({
-      key: "TPURNw.X4pdwg:1gMMoqxLUl30a7lm",
-      clientId: this.state.uniqueId
-    });
-    channel = ably.channels.get(channelName);
+    channel = global.ably.channels.get(channelName);
 
     global.classObj = this;
     await channel.history({limit: 1}, function(err, resultPage) {
@@ -102,7 +97,7 @@ export default class MyChatsScreen extends React.Component {
       } else {
         AsyncStorage.getItem("msgTimestamps")
           .then(timestamps => {
-            if (timestamps != null) {
+            if (timestamps != null && resultPage.items.length > 0) {
               timestamps = JSON.parse(timestamps);
               if (timestamps[item.id] < resultPage.items[0].timestamp)
                 ret = 1;
@@ -110,7 +105,8 @@ export default class MyChatsScreen extends React.Component {
               global.classObj.setState({update: !global.classObj.state.update});
             }
           })
-          .done();
+          .done(() => {
+          });
       }
     });
 

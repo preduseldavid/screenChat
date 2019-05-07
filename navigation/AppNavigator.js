@@ -20,23 +20,31 @@ const styles = StyleSheet.create({
   },
 });
 
+const UsernameStack = createStackNavigator({
+  Username: UsernameScreen,
+});
+
+const MovieChatStack = createStackNavigator({
+  MovieChat: MovieChatScreen
+});
+
 const MainStack = createStackNavigator({
   MainTab: {
     screen: MainTabNavigator,
     navigationOptions: {
 	    header: null,
     },
-  }
-});
-
-const TheOtherStack = createStackNavigator({
-  MovieChat: MovieChatScreen,
+  },
+  MovieChatStack,
+  UsernameStack,
+},
+{
+    headerMode: 'none',
 });
 
 export default createAppContainer(createSwitchNavigator({
   // You could add another route here for authentication.
   // Read more at https://reactnavigation.org/docs/en/auth-flow.html
   Main: MainStack,
-  TheOther: TheOtherStack,
 }));
 
