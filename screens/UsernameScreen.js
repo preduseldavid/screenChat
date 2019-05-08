@@ -35,13 +35,22 @@ export default class MovieChatScreen extends Component {
   }
 
   componentDidMount() {
+    AsyncStorage.getItem("username")
+    .then(value => {
+      this.setState({ username: value, txtInput: value });
+    })
+    .done();
   }
 
   updateUsername = (newUsername) => {
+    if (newUsername == '')
+      return;
+
     console.log(newUsername);
     AsyncStorage.setItem("username", newUsername);
     this.setState({ username: newUsername });
     if (this.props.navigation) {
+      this.props.navigation.state.params.callbackSuccess(newUsername);
       redirectSuccess = this.props.navigation.state.params.redirectSuccess;
       this.props.navigation.navigate({ routeName: redirectSuccess});
     }

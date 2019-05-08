@@ -16,8 +16,9 @@ import DeviceInfo from 'react-native-device-info';
 import Colors from '../constants/Colors';
 import { Icon } from 'react-native-elements';
 import AsyncStorage from '@react-native-community/async-storage';
+import MyChatsScreen from './MyChatsScreen';
 
-// somewhere in your app
+
 import {
   Menu,
   MenuOptions,
@@ -26,17 +27,23 @@ import {
 } from 'react-native-popup-menu';
 
 
-var channel;
 var MovieChatScreenGlobal;
 
 export default class MovieChatScreen extends React.Component {
 
   changeUsername = () => {
-    this.props.navigation.navigate({ routeName: 'Username', params: {redirectSuccess: 'MovieChat'}});
+    this.props.navigation.navigate({ routeName: 'Username', params: {
+      redirectSuccess: 'MovieChat',
+      callbackSuccess: this.updateUsername,
+    }});
   };
 
   deleteChat = () => {
 
+  };
+
+  updateUsername = (newUsername) => {
+    this.setState({ username: newUsername });
   };
 
   static navigationOptions = ({ navigation }) => {
@@ -63,7 +70,7 @@ export default class MovieChatScreen extends React.Component {
         </TouchableOpacity>
       ),
       headerRight: (
-        <Menu>
+        <Menu name={'myChat'}>
         <MenuTrigger>
               <Icon
                 name='more-vert'
@@ -98,11 +105,12 @@ export default class MovieChatScreen extends React.Component {
     movie = this.props.navigation.state.params.movie;
     this.movie = this.props.navigation.state.params.movie;
     flatList = null;
+    this.channel = null;
   }
 
   componentDidMount = () => {
+    console.log('MOUNT');
     MovieChatScreenGlobal = this;
-    this.subscribe();
 
     AsyncStorage.getItem("username")
     .then(value => {
@@ -116,14 +124,40 @@ export default class MovieChatScreen extends React.Component {
       if (timestamps != null) {
         console.log(timestamps);
         timestamps = JSON.parse(timestamps);
-        this.setState({lastMsgTimestamp: timestamps[global.movie.id]});
+        this.setState({lastMsgTimestamp: timestamps[global.movie.id.toString()]});
       }
       else 
-        timestamps = [];
+        timestamps = {};
     })
     .done();
+
+    componentWillUnmount = () => {
+      console.log('UNMOUNT');
+    };
+
+    this.props.navigation.addListener(
+    'didBlur',
+      payload => {
+        this.unsubscribe();
+      }
+    );
+
+    this.props.navigation.addListener(
+    'didFocus',
+      payload => {
+        this.subscribe();
+      }
+    );
   };
 
+
+  updateUsername = () => {
+    AsyncStorage.getItem("username")
+    .then(value => {
+      this.setState({ username: value });
+    })
+    .done();
+  }
 
 
   navigateBack = () => {
@@ -143,8 +177,8 @@ export default class MovieChatScreen extends React.Component {
       if (timestamps != null)
         timestamps = JSON.parse(timestamps);
       else 
-        timestamps = [];
-      timestamps[global.movie.id] = timestamp;
+        timestamps = {};
+      timestamps[global.movie.id.toString()] = timestamp;
       await AsyncStorage.setItem('msgTimestamps', JSON.stringify(timestamps));
 
     }
@@ -167,18 +201,32 @@ export default class MovieChatScreen extends React.Component {
       list.push(global.movie);
       console.log(global.movie);
       await AsyncStorage.setItem('myChatsList', JSON.stringify(list));
+
+      // already stored for adding it
+      if (global.MyChatsNewList == null)
+        global.MyChatsNewList = [];
+      for (var i = 0; i < global.MyChatsNewList.length; ++i)
+        if (global.MyChatsNewList[i].id == global.movie.id)
+          return;
+      global.MyChatsNewList.unshift(global.movie);
+
     } catch (error) {
       console.log(error);
     }
   };
 
+  unsubscribe = () => {
+    console.log('UNSUBSCRIBE');
+    this.channel.unsubscribe();
+  };
+
   subscribe = () => {
     let channelName = 'screenChat:_dev_en_' + (this.props.navigation.state.params.movie.id).toString();
-    channel = global.ably.channels.get(channelName);
+    this.channel = global.ably.channels.get(channelName);
     console.log(channelName);
     
     // Get live message
-    channel.subscribe(msg => {
+    this.channel.subscribe(msg => {
       msg.data = JSON.parse(msg.data);
       var newMsgData = this.state.msgData;
       newMsgData.push(msg);
@@ -194,7 +242,7 @@ export default class MovieChatScreen extends React.Component {
     });
 
 
-      channel.history({limit: 10}, function(err, resultPage) {
+      this.channel.history({limit: 10}, function(err, resultPage) {
         if(err) {
           console.log('Unable to get channel history; err = ' + err.message);
         } else {
@@ -240,7 +288,7 @@ export default class MovieChatScreen extends React.Component {
       username: this.state.username,
       text: this.state.sendMessageText
     };
-    channel.publish('', JSON.stringify(msg), function(err) {
+    this.channel.publish('', JSON.stringify(msg), function(err) {
       if(err) {
         console.log('Unable to publish message; err = ' + err.message);
       } else {

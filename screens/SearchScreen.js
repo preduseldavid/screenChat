@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
+  TouchableHighlight,
   View,
   Button,
   FlatList
@@ -46,7 +46,7 @@ export default class SearchScreen extends React.Component {
   keyExtractor = (item, index) => index.toString();
 
   renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => this._goToSearchItem(item)}>
+    <TouchableHighlight onPress={() => this._goToSearchItem(item)}>
       <ListItem
         containerStyle={styles.listItem}
         title={item.media_type == 'movie' ? item.title : item.name}
@@ -56,7 +56,7 @@ export default class SearchScreen extends React.Component {
         leftIcon={{ name: item.media_type }}
         pad={8}
       />
-    </TouchableOpacity>
+    </TouchableHighlight>
   );
 
   render() {

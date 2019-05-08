@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableHighlight,
   View,
   Button,
   FlatList
@@ -19,12 +20,36 @@ import HideWithKeyboard from 'react-native-hide-with-keyboard';
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 
+import Menu, {
+  MenuProvider,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+  withMenuContext,
+} from 'react-native-popup-menu';
+
 var channel;
 
 export default class MyChatsScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
+
+  openMenu(item) {
+    this.menu.open();
+  }
+
+  onRef = r => {
+    this.menu = r;
+  }
+
+  onOptionSelect(value) {
+    alert(`Selected number: ${value}`);
+    if (value === 1) {
+      this.menu.close();
+    }
+    return false;
+  }
 
   constructor(props) {
     super(props);
@@ -37,6 +62,39 @@ export default class MyChatsScreen extends React.Component {
 
   componentDidMount = () => {
     this._retrieveData();
+
+    this.props.navigation.addListener(
+    'didFocus',
+      payload => {
+        this.updateMyChatsList(payload);
+      }
+    );
+  };
+
+  updateMyChatsList = (payload) => {
+    newList = global.MyChatsNewList;
+    if (newList != null) {
+      global.MyChatsNewList = [];
+      console.log(newList);
+
+      for (var i = 0 ; i < newList.length; ++i) {
+          var item = newList[i];
+          this.hasNewMessages(item);
+        }
+
+      list = this.state.myChatsList;
+      newList = newList.concat(list);
+      this.setState({myChatsList: newList});
+    }
+    else 
+      newList = this.state.myChatsList;
+    
+
+      // new messages
+      for (var i = 0 ; i < newList.length; ++i) {
+        var item = newList[i];
+        this.hasNewMessages(newList[i]);
+      }
   };
 
   keyExtractor = (item, index) => index.toString();
@@ -46,7 +104,7 @@ export default class MyChatsScreen extends React.Component {
   };
 
   renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => this._goToChatItem(item)}>
+    <TouchableHighlight onPress={() => this._goToChatItem(item)} onLongPress={() => this.openMenu(item)}>
       <ListItem
         containerStyle={styles.listItem}
         title={item.media_type == 'movie' ? item.title : item.name}
@@ -58,8 +116,17 @@ export default class MyChatsScreen extends React.Component {
         leftIcon={{ name: item.media_type }}
         pad={8}
       />
-    </TouchableOpacity>
+    </TouchableHighlight>
   );
+
+  addChatList = (newChat) => {
+    var chatsList = this.state.myChatsList;
+    chatsList.push(newChat);
+    console.log(chatsList);
+    this.setState({ myChatsList: chatsList });
+  }
+
+
 
   _retrieveData = async () => {
     try {
@@ -73,7 +140,7 @@ export default class MyChatsScreen extends React.Component {
 
       for (var i = 0 ; i < list.length; ++i) {
         var item = list[i];
-        this.hasNewMessages(list[i], i);
+        this.hasNewMessages(list[i]);
         console.log(item);
       }
 
@@ -83,7 +150,7 @@ export default class MyChatsScreen extends React.Component {
     }
   };
 
-  hasNewMessages = async (item, index) => {
+  hasNewMessages = async (item) => {
 
     let ret = 0;
     let channelName = 'screenChat:_dev_en_' + (item.id).toString();
@@ -99,9 +166,10 @@ export default class MyChatsScreen extends React.Component {
           .then(timestamps => {
             if (timestamps != null && resultPage.items.length > 0) {
               timestamps = JSON.parse(timestamps);
-              if (timestamps[item.id] < resultPage.items[0].timestamp)
+              if (timestamps[item.id.toString()] < resultPage.items[0].timestamp)
                 ret = 1;
               item.hasNewMessages = ret;
+              console.log(item);
               global.classObj.setState({update: !global.classObj.state.update});
             }
           })
@@ -116,6 +184,25 @@ export default class MyChatsScreen extends React.Component {
   render() {
     return (
       <ScrollView style={styles.container}>
+        
+
+        <Menu name={'chatsScreen'} style={styles.chatMenu} onSelect={value => this.onOptionSelect(value)}
+          name="menu-1" ref={this.onRef}>
+          <MenuTrigger/>
+          <MenuOptions>
+
+            <MenuOption value={1} onSelect={() => {}} >
+              <Text style={styles.chatMenuOption}>Mark as Read</Text>
+            </MenuOption>
+
+            <MenuOption value={2} onSelect={() => {}} >
+              <Text style={styles.chatMenuOption}>Delete</Text>
+            </MenuOption>
+            
+          </MenuOptions>
+        </Menu>
+
+
         <FlatList
           keyboardShouldPersistTaps='handled'
           keyExtractor={this.keyExtractor}
@@ -132,6 +219,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  chatMenu: {
+    position: 'absolute',
+    alignSelf: 'center',
+    marginTop: '20%',
+  },
+  chatMenuOption: {
+    fontSize: 20,
+    textAlign: 'center',
+    paddingVertical: 10,
   },
   listItem: {
     paddingLeft: '3%',
