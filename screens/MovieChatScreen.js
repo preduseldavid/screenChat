@@ -55,8 +55,8 @@ export default class MovieChatScreen extends React.Component {
       headerStyle: {
         backgroundColor: Colors.lightGray3,
       },
-      headerTitleStyle: { 
-        textAlign:"center", 
+      headerTitleStyle: {
+        textAlign:"center",
         flex:1,
         color: Colors.customYellow,
       },
@@ -126,7 +126,7 @@ export default class MovieChatScreen extends React.Component {
         timestamps = JSON.parse(timestamps);
         this.setState({lastMsgTimestamp: timestamps[global.movie.id.toString()]});
       }
-      else 
+      else
         timestamps = {};
     })
     .done();
@@ -176,7 +176,7 @@ export default class MovieChatScreen extends React.Component {
       var timestamps = await AsyncStorage.getItem('msgTimestamps');
       if (timestamps != null)
         timestamps = JSON.parse(timestamps);
-      else 
+      else
         timestamps = {};
       timestamps[global.movie.id.toString()] = timestamp;
       await AsyncStorage.setItem('msgTimestamps', JSON.stringify(timestamps));
@@ -190,9 +190,9 @@ export default class MovieChatScreen extends React.Component {
       console.log(list);
       if (list != null)
         list = JSON.parse(list);
-      else 
+      else
         list = [];
-      
+
        // already stored
       for (var i = 0; i < list.length; ++i)
         if (list[i].id == global.movie.id)
@@ -224,7 +224,7 @@ export default class MovieChatScreen extends React.Component {
     let channelName = 'screenChat:_dev_en_' + (this.props.navigation.state.params.movie.id).toString();
     this.channel = global.ably.channels.get(channelName);
     console.log(channelName);
-    
+
     // Get live message
     this.channel.subscribe(msg => {
       msg.data = JSON.parse(msg.data);
@@ -311,10 +311,10 @@ export default class MovieChatScreen extends React.Component {
 
     return (
       <View style={styles.container}>
-        <ImageBackground 
-          source={{ uri: (this.movie.media_type == 'person' 
+        <ImageBackground
+          source={{ uri: (this.movie.media_type == 'person'
             ? 'http://image.tmdb.org/t/p/w300' + this.movie.profile_path
-            : 'http://image.tmdb.org/t/p/w300' + this.movie.poster_path)}} 
+            : 'http://image.tmdb.org/t/p/w300' + this.movie.poster_path)}}
           style={styles.posterImg}
         />
       <FlatList style={styles.list}
@@ -342,7 +342,7 @@ export default class MovieChatScreen extends React.Component {
         <View style={styles.footer}>
           <View style={styles.inputContainer}>
             <TextInput style={styles.inputs}
-              ref={component => this.sendMessageInput = component} 
+              ref={component => this.sendMessageInput = component}
               placeholder="Write a message..."
               underlineColorAndroid='transparent'
               returnKeyType='send'
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#a9a9a9',
   },
   posterImg: {
-    width: '100%', 
+    width: '100%',
     height: '100%',
     opacity: 0.4,
     position: 'absolute',
@@ -455,4 +455,4 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     padding:2,
   },
-}); 
+});
