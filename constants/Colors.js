@@ -18,4 +18,6 @@ export default {
   lightGray1: '#D3D3D3',
   lightGray2: '#E0E0E0',
   lightGray3: '#F5F5F5',
+
+  timeTextColor: '#aaa',
 };

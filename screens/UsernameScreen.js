@@ -54,7 +54,7 @@ export default class MovieChatScreen extends Component {
       redirectSuccess = this.props.navigation.state.params.redirectSuccess;
       this.props.navigation.navigate({ routeName: redirectSuccess});
     }
-    else 
+    else
       this.props.updateUsername(newUsername);
   };
 
@@ -113,4 +113,4 @@ const styles = StyleSheet.create({
     width: '50',
     paddingTop: 100,
   },
-}); 
+});

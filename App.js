@@ -84,11 +84,11 @@ export default class App extends Component<Props> {
           </View>
         </MenuProvider>
       );
-    else 
+    else
       return (
           <Username noBack updateUsername={this.updateUsername}/>
       );
-    
+
   }
 }
 
