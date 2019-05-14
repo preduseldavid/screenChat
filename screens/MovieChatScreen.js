@@ -9,64 +9,16 @@ import {
 } from 'react-native';
 import { Icon } from 'react-native-elements';
 
-import { GiftedChat, Actions, Bubble, SystemMessage, Time } from 'react-native-gifted-chat';
+import { GiftedChat, Actions, Bubble, SystemMessage, Time, Day, Send, LoadEarlier } from 'react-native-gifted-chat';
 import Colors from '../constants/Colors';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-community/async-storage';
-
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
+import HeaderMovieChat from '../components/HeaderMovieChat';
 
 export default class MovieChatScreen extends React.Component {
 
-  static navigationOptions = ({ navigation }) => {
-    var item = navigation.getParam('movie');
-    global.movie = item;
-    var title = item.media_type == 'movie' ? item.title : item.name;
-    return {
-      title: title,
-      headerStyle: {
-        backgroundColor: Colors.lightGray3,
-      },
-      headerTitleStyle: {
-        textAlign:"center",
-        flex:1,
-        color: Colors.customYellow,
-      },
-      headerLeft:(
-        <TouchableOpacity style={{ marginLeft: 6 }} onPress={() => navigation.goBack(null)}>
-          <Icon
-            name='arrow-back'
-            size={30}
-            color={Colors.customYellow}
-          />
-        </TouchableOpacity>
-      ),
-      headerRight: (
-        <Menu name={'myChat'}>
-        <MenuTrigger>
-              <Icon
-                name='more-vert'
-                size={30}
-                color={Colors.customYellow}
-              />
-          </MenuTrigger>
-
-          <MenuOptions>
-            <MenuOption onSelect={() => MovieChatScreenGlobal.changeUsername()} >
-              <Text style={{color: 'black', fontSize: 16, paddingVertical: 10}}>Change Username</Text>
-            </MenuOption>
-            <MenuOption onSelect={() => MovieChatScreenGlobal.deleteChat()} >
-              <Text style={{color: 'black', fontSize: 16, paddingVertical: 10}}>Delete Chat</Text>
-            </MenuOption>
-          </MenuOptions>
-        </Menu>
-      ),
-    };
+  static navigationOptions = {
+    header: null,
   };
 
   constructor(props) {
@@ -92,9 +44,17 @@ export default class MovieChatScreen extends React.Component {
     this.renderFooter = this.renderFooter.bind(this);
     this.onLoadEarlier = this.onLoadEarlier.bind(this);
     this.renderTime = this.renderTime.bind(this);
+    this.renderSend = this.renderSend.bind(this);
+    this.renderLoadEarlier = this.renderLoadEarlier.bind(this);
+    this.goToSettings = this.goToSettings.bind(this);
+    this.updateUsername = this.updateUsername.bind(this);
+    this.deleteChat = this.deleteChat.bind(this);
+    this.goBack = this.goBack.bind(this);
 
     this.movie = this.props.navigation.state.params.movie;
     this.ablyChannel = null;
+    this.navFocusListener = null;
+    this.navBlurListener = null;
   }
 
   componentWillMount() {
@@ -104,8 +64,8 @@ export default class MovieChatScreen extends React.Component {
         messages: [
           {
             _id: Math.round(Math.random() * 1000000),
-            text: "You are officially rocking GiftedChat.",
-            createdAt: new Date(Date.UTC(2016, 7, 30, 17, 20, 0)),
+            text: "You joined this Chat.",
+            createdAt: Date.now(),
             system: true,
           },
         ],
@@ -133,11 +93,54 @@ export default class MovieChatScreen extends React.Component {
     })
     .done();
 
-    this.ablySubscribe();
+    // When we enter the screen
+    this.navFocusListener = this.props.navigation.addListener(
+    'didFocus',
+      payload => {
+        this.ablySubscribe();
+        this.onLoadEarlier();
+      }
+    );
+
+    // When we leave the screen
+    this.navBlurListener = this.props.navigation.addListener(
+    'didBlur',
+      payload => {
+        this.ablyUnsubscribe();
+      }
+    );
   }
 
   componentWillUnmount() {
     this._isMounted = false;
+    //this.navFocusListener.remove();
+    //this.navBlurListener.remove();
+  }
+
+  goToSettings() {
+    this.props.navigation.navigate({ routeName: 'Username', params: {
+      redirectSuccess: 'MovieChat',
+      callbackSuccess: this.updateUsername,
+    }});
+  };
+
+  updateUsername(value) {
+    var obj = this.state.user;
+    obj.name = value;
+    this.setState({ user: obj });
+  };
+
+  deleteChat() {
+
+  };
+
+  goBack() {
+    this.props.navigation.goBack(null);
+  }
+
+  isCloseToTop({ layoutMeasurement, contentOffset, contentSize }) {
+      const paddingToTop = 0;
+      return contentSize.height - layoutMeasurement.height - paddingToTop <= contentOffset.y;
   }
 
   onLoadEarlier() {
@@ -150,11 +153,15 @@ export default class MovieChatScreen extends React.Component {
     if (this.state.historyResultPage) {
       this.state.historyResultPage.next((err, nextPage) => {
         console.log(nextPage);
+        if (!nextPage) return;
         var length = nextPage.items.length;
         var messages = [];
         for (var i = 0; i < nextPage.items.length; ++i) {
           messages.push(JSON.parse(nextPage.items[i].data));
         }
+
+        if (nextPage.items.length > 0)
+            this.updateLastMsgTimestamp(nextPage.items[0].timestamp);
 
         this.setState((previousState) => {
           return {
@@ -173,11 +180,15 @@ export default class MovieChatScreen extends React.Component {
             console.log('Unable to get channel history; err = ' + err.message);
           }
           else {
+            if (!resultPage) return;
             var length = resultPage.items.length;
             var messages = [];
             for (var i = 0; i < resultPage.items.length; ++i) {
               messages.push(JSON.parse(resultPage.items[i].data));
             }
+
+            if (resultPage.items.length > 0)
+                this.updateLastMsgTimestamp(resultPage.items[0].timestamp);
 
             if (this._isMounted === true) {
               this.setState((previousState) => {
@@ -193,7 +204,6 @@ export default class MovieChatScreen extends React.Component {
         });
       });
     }
-
   }
 
   onSend(messages = []) {
@@ -234,16 +244,21 @@ export default class MovieChatScreen extends React.Component {
     this.ablyChannel.subscribe(msg => {
       msg.data = JSON.parse(msg.data);
 
-      //this.updateLastMsgTimestamp(msg.timestamp);
+      this.updateLastMsgTimestamp(msg.timestamp);
 
-      // this msg is mine, I wrote to this chat => store it to my chats
+      // This msg is mine, I wrote to this chat => store it to my chats
       if (msg.data.user._id === this.state.user._id) {
-        //this.storeData();
+        this.storeMovieChat();
       }
       else {
         this.onReceive(msg);
       }
     });
+  }
+
+  ablyUnsubscribe() {
+    this.ablyChannel.detach();
+    this.ablyChannel.unsubscribe();
   }
 
   ablyPublish(messages) {
@@ -258,39 +273,51 @@ export default class MovieChatScreen extends React.Component {
     }
   }
 
-  async ablyHistory() {
-    var items = [];
+  async storeMovieChat() {
     try {
-      await this.ablyChannel.history({untilAttach: true, limit: 10}, (err, resultPage) => {
-        if(err) {
-          console.log('Unable to get channel history; err = ' + err.message);
-        } else {
-          var length = resultPage.items.length;
-          for (var i = 0; i < resultPage.items.length; ++i) {
-            resultPage.items[i].data = JSON.parse(resultPage.items[i].data);
-          }
-          items = resultPage.items;
-        }
+      var list = await AsyncStorage.getItem('myChatsList');
+      if (list != null)
+        list = JSON.parse(list);
+      else
+        list = [];
 
-        if (0 && resultPage.hasNext()) {
-          resultPage.next(function(err, nextPage) {
-            var oldMsgData = MovieChatScreenGlobal.state.msgData;
-            for (var i = 0; i < nextPage.items.length; ++i) {
-              nextPage.items[i].data = JSON.parse(nextPage.items[i].data);
-              oldMsgData.unshift(nextPage.items[i]);
-            }
-            console.log(oldMsgData);
-            MovieChatScreenGlobal.setState({ msgData: oldMsgData });
-          });
-        }
-      });
-    }
-    catch (rejectedValue) {
-      // …
-    }
+       // Already stored on Disk
+      for (var i = 0; i < list.length; ++i)
+        if (list[i].id == this.movie.id)
+          return;
 
-    return items;
-  }
+      list.push(this.movie);
+      await AsyncStorage.setItem('myChatsList', JSON.stringify(list));
+
+      // Already stored in RAM for adding it (to Disk)
+      if (global.MyChatsNewList == null)
+        global.MyChatsNewList = [];
+      for (var i = 0; i < global.MyChatsNewList.length; ++i)
+        if (global.MyChatsNewList[i].id == this.movie.id)
+          return;
+      global.MyChatsNewList.unshift(this.movie);
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+    async updateLastMsgTimestamp(timestamp) {
+      if (this.state.lastMsgTimestamp == null ||
+        this.state.lastMsgTimestamp < timestamp) {
+        console.log(timestamp);
+        this.setState({lastMsgTimestamp: timestamp});
+
+        var timestamps = await AsyncStorage.getItem('msgTimestamps');
+        if (timestamps != null)
+          timestamps = JSON.parse(timestamps);
+        else
+          timestamps = {};
+       timestamps[this.movie.id.toString()] = timestamp;
+       await AsyncStorage.setItem('msgTimestamps', JSON.stringify(timestamps));
+       console.log(timestamps);
+     }
+ };
 
   renderBubble(props) {
     return (
@@ -300,11 +327,11 @@ export default class MovieChatScreen extends React.Component {
           color: Colors.timeTextColor,
         }}
         tick={{
-          color: Colors.timeTextColor,
+          color: 'black',
         }}
         wrapperStyle={{
           left: {
-            backgroundColor: '#f0f0f0',
+            backgroundColor: Colors.lightGray3,
             marginLeft: -10,
           },
           right: {
@@ -356,7 +383,7 @@ export default class MovieChatScreen extends React.Component {
           marginBottom: 15,
         }}
         textStyle={{
-          color: 'black',
+          color: 'white',
           fontSize: 14,
         }}
       />
@@ -376,9 +403,52 @@ export default class MovieChatScreen extends React.Component {
     return null;
   }
 
+  renderDay(props) {
+    return (
+      <Day
+        {...props}
+        textStyle={{color: 'white'}}
+      />
+    );
+  }
+
+  renderSend(props) {
+    return(
+        <Send
+          {...props}
+          textStyle={{
+            color: 'white',
+            backgroundColor: Colors.customGray,
+            borderRadius: 15
+          }}
+          label={' SEND '}
+        />
+      );
+  }
+
+  renderLoadEarlier(props) {
+    return(
+        <LoadEarlier
+          {...props}
+          wrapperStyle={{
+            backgroundColor: Colors.customYellowLight,
+          }}
+          textStyle={{
+            color: 'black',
+          }}
+        />
+      );
+  }
+
   render() {
     return (
       <View style={styles.container}>
+        <HeaderMovieChat
+          title={this.movie.media_type == 'movie' ? this.movie.title : this.movie.name}
+          goBack={this.goBack}
+          deleteChat={this.deleteChat}
+          goToSettings={this.goToSettings}
+        />
         <ImageBackground
           source={{ uri: (this.movie.media_type == 'person'
             ? 'http://image.tmdb.org/t/p/w300' + this.movie.profile_path
@@ -398,9 +468,17 @@ export default class MovieChatScreen extends React.Component {
           renderTime={this.renderTime}
           renderSystemMessage={this.renderSystemMessage}
           renderFooter={this.renderFooter}
+          renderDay={this.renderDay}
+          renderSend={this.renderSend}
+          renderLoadEarlier={this.renderLoadEarlier}
           renderUsernameOnMessage={true}
           showAvatarForEveryMessage={true}
           renderAvatar={() => null}
+          keyboardShouldPersistTaps={'never'}
+          listViewProps={{
+            scrollEventThrottle: 400,
+            onScroll: ({ nativeEvent }) => { if (this.isCloseToTop(nativeEvent)) this.onLoadEarlier(); }
+          }}
         />
         </View>
     );
@@ -413,6 +491,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#a9a9a9',
   },
   posterImg: {
+    marginTop: 50,
     width: '100%',
     height: '100%',
     opacity: 0.4,

@@ -3,7 +3,7 @@ import { createAppContainer, createSwitchNavigator, createStackNavigator, StackA
 
 import MainTabNavigator from './MainTabNavigator';
 import MovieChatScreen from '../screens/MovieChatScreen';
-import UsernameScreen from '../screens/UsernameScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 import Colors from '../constants/Colors';
 import { Icon, Image } from 'react-native-elements';
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
 });
 
 const UsernameStack = createStackNavigator({
-  Username: UsernameScreen,
+  Username: SettingsScreen,
 });
 
 const MovieChatStack = createStackNavigator({
@@ -47,4 +47,3 @@ export default createAppContainer(createSwitchNavigator({
   // Read more at https://reactnavigation.org/docs/en/auth-flow.html
   Main: MainStack,
 }));
-

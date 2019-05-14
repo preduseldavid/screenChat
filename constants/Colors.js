@@ -12,8 +12,8 @@ export default {
   noticeBackground: tintColor,
   noticeText: '#fff',
 
-  customYellow: '#e2b620',
-  customYellowLight: '#f6e8bc',
+  customYellow: '#f7ab08',
+  customYellowLight: '#fde6b5',
   customGray: '#545454',
   lightGray1: '#D3D3D3',
   lightGray2: '#E0E0E0',

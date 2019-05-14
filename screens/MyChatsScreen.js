@@ -53,7 +53,7 @@ export default class MyChatsScreen extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       uniqueId: DeviceInfo.getUniqueID(),
       myChatsList: [],
       update: true,
@@ -86,9 +86,9 @@ export default class MyChatsScreen extends React.Component {
       newList = newList.concat(list);
       this.setState({myChatsList: newList});
     }
-    else 
+    else
       newList = this.state.myChatsList;
-    
+
 
       // new messages
       for (var i = 0 ; i < newList.length; ++i) {
@@ -133,7 +133,7 @@ export default class MyChatsScreen extends React.Component {
       var list = await AsyncStorage.getItem('myChatsList');
       if (list != null)
         list = JSON.parse(list);
-      else 
+      else
         list = [];
 
       console.log(list);
@@ -153,11 +153,10 @@ export default class MyChatsScreen extends React.Component {
   hasNewMessages = async (item) => {
 
     let ret = 0;
-    let channelName = 'screenChat:_dev_en_' + (item.id).toString();
+    let channelName = 'screenChat:dev_en_' + (item.id).toString();
     channel = global.ably.channels.get(channelName);
 
-    global.classObj = this;
-    await channel.history({limit: 1}, function(err, resultPage) {
+    await channel.history({limit: 1}, (err, resultPage) => {
       if(err) {
         console.log('Unable to get channel history; err = ' + err.message);
         ret = 0;
@@ -170,7 +169,7 @@ export default class MyChatsScreen extends React.Component {
                 ret = 1;
               item.hasNewMessages = ret;
               console.log(item);
-              global.classObj.setState({update: !global.classObj.state.update});
+              this.setState({update: !this.state.update});
             }
           })
           .done(() => {
@@ -184,7 +183,7 @@ export default class MyChatsScreen extends React.Component {
   render() {
     return (
       <ScrollView style={styles.container}>
-        
+
 
         <Menu name={'chatsScreen'} style={styles.chatMenu} onSelect={value => this.onOptionSelect(value)}
           name="menu-1" ref={this.onRef}>
@@ -198,7 +197,7 @@ export default class MyChatsScreen extends React.Component {
             <MenuOption value={2} onSelect={() => {}} >
               <Text style={styles.chatMenuOption}>Delete</Text>
             </MenuOption>
-            
+
           </MenuOptions>
         </Menu>
 

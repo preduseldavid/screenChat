@@ -9,7 +9,8 @@ import {
   TouchableHighlight,
   View,
   Button,
-  FlatList
+  FlatList,
+  StatusBar
 } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import Colors from '../constants/Colors';
@@ -24,14 +25,14 @@ export default class SearchScreen extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       searchText: '',
       searchData: [],
     };
   }
 
   componentDidMount() {
-    
+
   }
 
   _getUsername = () => {
@@ -62,14 +63,18 @@ export default class SearchScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <StatusBar
+          backgroundColor={Colors.customYellow}
+          barStyle="light-content"
+        />
         <HideWithKeyboard>
           <Image style={styles.searchLogo} source={require('../assets/images/logo-full.png')} />
         </HideWithKeyboard>
 
         <View style={styles.searchContainer}>
-          <SearchBar 
-            containerStyle={styles.searchBarContainer} 
-            inputContainerStyle={styles.searchInputContainer} 
+          <SearchBar
+            containerStyle={styles.searchBarContainer}
+            inputContainerStyle={styles.searchInputContainer}
             onChangeText={text => this._searchBarChange(text)}
             value={this.state.searchText}
             placeholder={'Search Movie, Tv Show, Actor...'}

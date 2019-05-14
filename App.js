@@ -11,7 +11,7 @@ import {Platform, StyleSheet, Text, View} from 'react-native';
 import Header from './components/Header';
 import AppNavigator from './navigation/AppNavigator';
 import SplashScreen from 'react-native-splash-screen';
-import Username from './screens/UsernameScreen';
+import Username from './screens/SettingsScreen';
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import { MenuProvider } from 'react-native-popup-menu';
@@ -61,7 +61,7 @@ export default class App extends Component<Props> {
       SplashScreen.hide();
     });
 
-    
+
   }
 
 
