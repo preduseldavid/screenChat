@@ -12,7 +12,7 @@ export default {
   noticeBackground: tintColor,
   noticeText: '#fff',
 
-  customYellow: '#f7ab08',
+  customYellow: '#ffbe33',
   customYellowLight: '#fde6b5',
   customGray: '#545454',
   lightGray1: '#D3D3D3',

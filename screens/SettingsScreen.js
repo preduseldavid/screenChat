@@ -85,7 +85,7 @@ export default class MovieChatScreen extends Component {
         <Button
           style={styles.submitBtn}
           onPress={() => this.updateUsername(this.state.txtInput)}
-          title="NEXT"
+          title="DONE"
           color={Colors.customYellow}
         />
       </View>

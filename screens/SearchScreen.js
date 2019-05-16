@@ -65,7 +65,7 @@ export default class SearchScreen extends React.Component {
       <View style={styles.container}>
         <StatusBar
           backgroundColor={Colors.customYellow}
-          barStyle="light-content"
+          barStyle="dark-content"
         />
         <HideWithKeyboard>
           <Image style={styles.searchLogo} source={require('../assets/images/logo-full.png')} />
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    fontFamily: 'Lato-Regular',
   },
   searchContainer: {
     flex: 1,

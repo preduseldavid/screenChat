@@ -51,10 +51,10 @@ export default class HeaderMovieChat extends React.Component {
 
         <MenuOptions>
           <MenuOption onSelect={this.props.goToSettings} >
-            <Text style={{color: 'black', fontSize: 16, paddingVertical: 10}}>Settings</Text>
+            <Text style={styles.chatMenuOption}>Settings</Text>
           </MenuOption>
           <MenuOption onSelect={this.props.deleteChat} >
-            <Text style={{color: 'black', fontSize: 16, paddingVertical: 10}}>Delete Chat</Text>
+            <Text style={styles.chatMenuOption}>Delete Chat</Text>
           </MenuOption>
         </MenuOptions>
       </Menu>
@@ -69,6 +69,13 @@ export default class HeaderMovieChat extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  chatMenuOption: {
+    fontSize: 16,
+    color: 'black',
+    textAlign: 'center',
+    paddingVertical: 10,
+    fontFamily: 'Lato-Regular',
+  },
   header: {
     flex: 0,
     flexDirection: 'row',

@@ -11,7 +11,9 @@ import {
   TouchableHighlight,
   View,
   Button,
-  FlatList
+  FlatList,
+  Alert,
+  ActionSheetIOS,
 } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import Colors from '../constants/Colors';
@@ -26,9 +28,9 @@ import Menu, {
   MenuOption,
   MenuTrigger,
   withMenuContext,
+  renderers,
 } from 'react-native-popup-menu';
-
-var channel;
+const { SlideInMenu } = renderers;
 
 export default class MyChatsScreen extends React.Component {
   static navigationOptions = {
@@ -36,6 +38,7 @@ export default class MyChatsScreen extends React.Component {
   };
 
   openMenu(item) {
+    this.setState({menuItem: item});
     this.menu.open();
   }
 
@@ -44,11 +47,21 @@ export default class MyChatsScreen extends React.Component {
   }
 
   onOptionSelect(value) {
-    alert(`Selected number: ${value}`);
     if (value === 1) {
-      this.menu.close();
+      Alert.alert(
+        'Confirmation',
+        'Are you sure you want to delete this chat?',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {},
+            style: 'cancel',
+          },
+          {text: 'Yes', onPress: () =>  this.deleteChat(this.state.menuItem) },
+        ]
+      );
     }
-    return false;
+    this.menu.close();
   }
 
   constructor(props) {
@@ -56,31 +69,64 @@ export default class MyChatsScreen extends React.Component {
     this.state = {
       uniqueId: DeviceInfo.getUniqueID(),
       myChatsList: [],
+      ablyChannels: [],
       update: true,
+      menuItem: null,
     };
+
   };
 
   componentDidMount = () => {
-    this._retrieveData();
+    this.retrieveMyChatsList();
 
     this.props.navigation.addListener(
     'didFocus',
       payload => {
-        this.updateMyChatsList(payload);
+        this.retrieveMyChatsList();
+        var navParams = this.props.navigation.state.params;
+        if (navParams) {
+          if (navParams.deleteItem)
+            this.deleteChat(navParams.deleteItem);
+          if (navParams.setTopOfMyChatsList)
+            this.setTopOfMyChatsList(navParams.setTopOfMyChatsList);
+        }
       }
     );
+
+
+    this.props.navigation.addListener(
+    'didBlur',
+      payload => {
+        //this.unsubscribeFromAll();
+      }
+    );
+  };
+
+  async deleteChat(item) {
+    try {
+      var list = await AsyncStorage.getItem('myChatsList');
+      if (list != null)
+        list = JSON.parse(list);
+      else
+        list = [];
+
+      list = list.filter((element) => {
+        return element.id != item.id;
+      });
+
+      AsyncStorage.setItem('myChatsList', JSON.stringify(list));
+      this.setState({myChatsList: list});
+    }
+    catch (error) {
+      console.log(error);
+    }
+
   };
 
   updateMyChatsList = (payload) => {
     newList = global.MyChatsNewList;
     if (newList != null) {
       global.MyChatsNewList = [];
-      console.log(newList);
-
-      for (var i = 0 ; i < newList.length; ++i) {
-          var item = newList[i];
-          this.hasNewMessages(item);
-        }
 
       list = this.state.myChatsList;
       newList = newList.concat(list);
@@ -90,21 +136,21 @@ export default class MyChatsScreen extends React.Component {
       newList = this.state.myChatsList;
 
 
-      // new messages
-      for (var i = 0 ; i < newList.length; ++i) {
-        var item = newList[i];
-        this.hasNewMessages(newList[i]);
-      }
+    // new messages
+    for (var i = 0 ; i < newList.length; ++i) {
+      //this.checkNewMessages(newList[i]);
+    }
   };
 
   keyExtractor = (item, index) => index.toString();
 
-  _goToChatItem = (item) => {
+  goToChatItem = (item) => {
+    item.hasNewMessages = false;
     this.props.navigation.navigate({ routeName: 'MovieChat',  params: { movie: item } })
   };
 
   renderItem = ({ item }) => (
-    <TouchableHighlight onPress={() => this._goToChatItem(item)} onLongPress={() => this.openMenu(item)}>
+    <TouchableHighlight onPress={() => this.goToChatItem(item)} onLongPress={() => this.openMenu(item)}>
       <ListItem
         containerStyle={styles.listItem}
         title={item.media_type == 'movie' ? item.title : item.name}
@@ -128,7 +174,7 @@ export default class MyChatsScreen extends React.Component {
 
 
 
-  _retrieveData = async () => {
+  retrieveMyChatsList = async () => {
     try {
       var list = await AsyncStorage.getItem('myChatsList');
       if (list != null)
@@ -138,78 +184,100 @@ export default class MyChatsScreen extends React.Component {
 
       console.log(list);
 
-      for (var i = 0 ; i < list.length; ++i) {
-        var item = list[i];
-        this.hasNewMessages(list[i]);
-        console.log(item);
-      }
-
       this.setState({myChatsList: list.reverse()});
     } catch (error) {
       // Error retrieving data
     }
   };
 
-  hasNewMessages = async (item) => {
+  checkNewMessages = async (item) => {
+    try {
+      if (item.hasNewMessages)
+        return;
 
-    let ret = 0;
-    let channelName = 'screenChat:dev_en_' + (item.id).toString();
-    channel = global.ably.channels.get(channelName);
+      let channelName = 'screenChat:dev_en_' + (item.id).toString();
+      let channel = global.ably.channels.get(channelName);
 
-    await channel.history({limit: 1}, (err, resultPage) => {
-      if(err) {
-        console.log('Unable to get channel history; err = ' + err.message);
-        ret = 0;
-      } else {
-        AsyncStorage.getItem("msgTimestamps")
-          .then(timestamps => {
-            if (timestamps != null && resultPage.items.length > 0) {
-              timestamps = JSON.parse(timestamps);
-              if (timestamps[item.id.toString()] < resultPage.items[0].timestamp)
-                ret = 1;
-              item.hasNewMessages = ret;
-              console.log(item);
-              this.setState({update: !this.state.update});
-            }
-          })
-          .done(() => {
-          });
-      }
-    });
+      var ablyChannels = this.state.ablyChannels;
+      ablyChannels.push(channel);
+      this.setState({ ablyChannels: ablyChannels });
 
-    return ret;
+      await channel.history({limit: 1}, (err, resultPage) => {
+        if(err) {
+          console.log('Unable to get channel history; err = ' + err.message);
+        } else {
+          AsyncStorage.getItem("msgTimestamps")
+            .then(timestamps => {
+                if (timestamps != null && resultPage.items.length > 0) {
+                timestamps = JSON.parse(timestamps);
+
+                var hasNewMessages = timestamps[item.id.toString()] < resultPage.items[0].timestamp;
+                item.hasNewMessages = hasNewMessages;
+                this.setState({update: !this.state.update});
+
+                if (!hasNewMessages) {
+                  console.log('SET update for ' + item.id);
+                  channel.subscribe(msg => {
+                    console.log(msg);
+                    item.hasNewMessages = true;
+                    this.setState({update: !this.state.update});
+                    channel.unsubscribe();
+                  });
+                }
+              }
+            });
+        }
+      });
+    }
+    catch (error) {
+      console.log(error);
+    }
   };
+
+  async unsubscribeFromAll() {
+    var ablyChannels = this.state.ablyChannels;
+
+    for (var i = 0 ; i < ablyChannels.length; ++i)
+      ablyChannels[i].unsubscribe();
+  }
 
   render() {
     return (
-      <ScrollView style={styles.container}>
+      <MenuProvider
+        backHandler={true}
+        skipInstanceCheck={true}
+        backdrop={{backgroundColor: 'tomato', opacity: 0.5,}}
+        menuProviderWrapper={{backgroundColor: 'tomato'}}
+      >
+        <ScrollView style={styles.container}>
+
+            <Menu name={'chatsScreen'} renderer={SlideInMenu} style={styles.chatMenu} onSelect={value => this.onOptionSelect(value)}
+              name="menu-1" ref={this.onRef}>
+              <MenuTrigger/>
+              <MenuOptions>
+
+                <MenuOption value={1}>
+                  <Text style={styles.chatMenuOption}>Delete</Text>
+                </MenuOption>
+
+                <MenuOption value={2}>
+                  <Text style={styles.chatMenuOption}>Cancel</Text>
+                </MenuOption>
+
+              </MenuOptions>
+            </Menu>
 
 
-        <Menu name={'chatsScreen'} style={styles.chatMenu} onSelect={value => this.onOptionSelect(value)}
-          name="menu-1" ref={this.onRef}>
-          <MenuTrigger/>
-          <MenuOptions>
 
-            <MenuOption value={1} onSelect={() => {}} >
-              <Text style={styles.chatMenuOption}>Mark as Read</Text>
-            </MenuOption>
-
-            <MenuOption value={2} onSelect={() => {}} >
-              <Text style={styles.chatMenuOption}>Delete</Text>
-            </MenuOption>
-
-          </MenuOptions>
-        </Menu>
-
-
-        <FlatList
-          keyboardShouldPersistTaps='handled'
-          keyExtractor={this.keyExtractor}
-          data={this.state.myChatsList}
-          extraData={this.state}
-          renderItem={this.renderItem}
-        />
-      </ScrollView>
+          <FlatList
+            keyboardShouldPersistTaps='handled'
+            keyExtractor={this.keyExtractor}
+            data={this.state.myChatsList}
+            extraData={this.state}
+            renderItem={this.renderItem}
+          />
+        </ScrollView>
+      </MenuProvider>
     );
   }
 }
@@ -220,14 +288,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   chatMenu: {
-    position: 'absolute',
-    alignSelf: 'center',
-    marginTop: '20%',
+
   },
   chatMenuOption: {
     fontSize: 20,
+    fontFamily: 'Lato-Regular',
     textAlign: 'center',
     paddingVertical: 10,
+    backgroundColor: Colors.customGray,
+    color: 'white',
   },
   listItem: {
     paddingLeft: '3%',

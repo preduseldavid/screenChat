@@ -6,10 +6,11 @@ import {
   View,
   ImageBackground,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Icon } from 'react-native-elements';
 
-import { GiftedChat, Actions, Bubble, SystemMessage, Time, Day, Send, LoadEarlier } from 'react-native-gifted-chat';
+import { GiftedChat, Actions, Bubble, SystemMessage, Time, Day, Send, LoadEarlier, Composer } from 'react-native-gifted-chat';
 import Colors from '../constants/Colors';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -34,12 +35,14 @@ export default class MovieChatScreen extends React.Component {
       isLoadingEarlier: false,
       lastMsgTimestamp: null,
       historyResultPage: null,
+      setTopOfMyChatsList: false,
     };
 
     this._isMounted = false;
     this.onSend = this.onSend.bind(this);
     this.onReceive = this.onReceive.bind(this);
     this.renderBubble = this.renderBubble.bind(this);
+    this.renderComposer = this.renderComposer.bind(this);
     this.renderSystemMessage = this.renderSystemMessage.bind(this);
     this.renderFooter = this.renderFooter.bind(this);
     this.onLoadEarlier = this.onLoadEarlier.bind(this);
@@ -117,6 +120,26 @@ export default class MovieChatScreen extends React.Component {
     //this.navBlurListener.remove();
   }
 
+  async setTopOfMyChatsList() {
+    try {
+      var list = await AsyncStorage.getItem('myChatsList');
+      if (list != null)
+        list = JSON.parse(list);
+      else
+        list = [];
+
+      list = list.filter((element) => {
+        return element.id != this.movie.id;
+      });
+      list.push(this.movie);
+
+      AsyncStorage.setItem('myChatsList', JSON.stringify(list));
+      this.setState({myChatsList: list});
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   goToSettings() {
     this.props.navigation.navigate({ routeName: 'Username', params: {
       redirectSuccess: 'MovieChat',
@@ -131,7 +154,18 @@ export default class MovieChatScreen extends React.Component {
   };
 
   deleteChat() {
-
+    Alert.alert(
+      'Confirmation',
+      'Are you sure you want to delete this chat?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => {},
+          style: 'cancel',
+        },
+        {text: 'Yes', onPress: () => this.props.navigation.navigate({ routeName: 'MyChats',  params: { deleteItem: this.movie } })},
+      ]
+    );
   };
 
   goBack() {
@@ -248,7 +282,7 @@ export default class MovieChatScreen extends React.Component {
 
       // This msg is mine, I wrote to this chat => store it to my chats
       if (msg.data.user._id === this.state.user._id) {
-        this.storeMovieChat();
+        //this.storeMovieChat();
       }
       else {
         this.onReceive(msg);
@@ -262,6 +296,11 @@ export default class MovieChatScreen extends React.Component {
   }
 
   ablyPublish(messages) {
+    if (!this.state.setTopOfMyChatsList) {
+      this.setState({setTopOfMyChatsList: true});
+      this.setTopOfMyChatsList();
+    }
+
     for (var i = 0; i < messages.length; ++i) {
       this.ablyChannel.publish('', JSON.stringify(messages[i]), function(err) {
         if(err) {
@@ -302,21 +341,21 @@ export default class MovieChatScreen extends React.Component {
     }
   };
 
-    async updateLastMsgTimestamp(timestamp) {
-      if (this.state.lastMsgTimestamp == null ||
-        this.state.lastMsgTimestamp < timestamp) {
-        console.log(timestamp);
-        this.setState({lastMsgTimestamp: timestamp});
+  async updateLastMsgTimestamp(timestamp) {
+    if (this.state.lastMsgTimestamp == null ||
+      this.state.lastMsgTimestamp < timestamp) {
+      console.log(timestamp);
+      this.setState({lastMsgTimestamp: timestamp});
 
-        var timestamps = await AsyncStorage.getItem('msgTimestamps');
-        if (timestamps != null)
-          timestamps = JSON.parse(timestamps);
-        else
-          timestamps = {};
-       timestamps[this.movie.id.toString()] = timestamp;
-       await AsyncStorage.setItem('msgTimestamps', JSON.stringify(timestamps));
-       console.log(timestamps);
-     }
+      var timestamps = await AsyncStorage.getItem('msgTimestamps');
+      if (timestamps != null)
+        timestamps = JSON.parse(timestamps);
+      else
+        timestamps = {};
+     timestamps[this.movie.id.toString()] = timestamp;
+     await AsyncStorage.setItem('msgTimestamps', JSON.stringify(timestamps));
+     console.log(timestamps);
+   }
  };
 
   renderBubble(props) {
@@ -325,9 +364,7 @@ export default class MovieChatScreen extends React.Component {
         {...props}
         usernameStyle={{
           color: Colors.timeTextColor,
-        }}
-        tick={{
-          color: 'black',
+          fontFamily: 'Lato-Regular',
         }}
         wrapperStyle={{
           left: {
@@ -342,9 +379,11 @@ export default class MovieChatScreen extends React.Component {
         textStyle={{
           left: {
             color: 'black',
+            fontFamily: 'Lato-Regular',
           },
           right: {
             color: 'black',
+            fontFamily: 'Lato-Regular',
           },
         }}
         linkStyle={{
@@ -359,6 +398,17 @@ export default class MovieChatScreen extends React.Component {
     );
   }
 
+  renderComposer(props) {
+    return (
+      <Composer
+        {...props}
+        textInputStyle={{
+          fontFamily: 'Lato-Regular'
+        }}
+      />
+    );
+  }
+
   renderTime(props) {
        return (
            <Time
@@ -366,9 +416,11 @@ export default class MovieChatScreen extends React.Component {
                textStyle={{
                    right: {
                        color: Colors.timeTextColor,
+                       fontFamily: 'Lato-Regular',
                    },
                    left: {
                        color: Colors.timeTextColor,
+                       fontFamily: 'Lato-Regular',
                    }
                }}
            />
@@ -385,6 +437,7 @@ export default class MovieChatScreen extends React.Component {
         textStyle={{
           color: 'white',
           fontSize: 14,
+          fontFamily: 'Lato-Regular',
         }}
       />
     );
@@ -407,7 +460,10 @@ export default class MovieChatScreen extends React.Component {
     return (
       <Day
         {...props}
-        textStyle={{color: 'white'}}
+        textStyle={{
+          color: 'white',
+          fontFamily: 'Lato-Regular',
+        }}
       />
     );
   }
@@ -418,6 +474,7 @@ export default class MovieChatScreen extends React.Component {
           {...props}
           textStyle={{
             color: 'white',
+            fontFamily: 'Lato-Regular',
             backgroundColor: Colors.customGray,
             borderRadius: 15
           }}
@@ -435,6 +492,7 @@ export default class MovieChatScreen extends React.Component {
           }}
           textStyle={{
             color: 'black',
+            fontFamily: 'Lato-Regular',
           }}
         />
       );
@@ -465,6 +523,7 @@ export default class MovieChatScreen extends React.Component {
           user={this.state.user}
 
           renderBubble={this.renderBubble}
+          renderComposer={this.renderComposer}
           renderTime={this.renderTime}
           renderSystemMessage={this.renderSystemMessage}
           renderFooter={this.renderFooter}
@@ -506,5 +565,6 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 14,
     color: '#aaa',
+    fontFamily: 'Lato-Regular',
   },
 });
