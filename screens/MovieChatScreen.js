@@ -45,6 +45,7 @@ export default class MovieChatScreen extends React.Component {
         name: '',
       },
       messages: [],
+      sendMessageText: '',
       loadEarlier: true,
       typingText: null,
       isLoadingEarlier: false,
@@ -640,6 +641,10 @@ export default class MovieChatScreen extends React.Component {
           listViewProps={{
             scrollEventThrottle: 400,
             onScroll: ({ nativeEvent }) => { if (this.isCloseToTop(nativeEvent)) this.onLoadEarlier(); }
+          }}
+          text={this.state.sendMessageText}
+          onInputTextChanged={(txtInput) => {
+            this.setState({sendMessageText: txtInput});
           }}
         />
         </View>
