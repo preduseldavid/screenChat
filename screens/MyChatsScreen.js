@@ -21,48 +21,13 @@ import { ListItem } from 'react-native-elements';
 import HideWithKeyboard from 'react-native-hide-with-keyboard';
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
-
-import Menu, {
-  MenuProvider,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-  withMenuContext,
-  renderers,
-} from 'react-native-popup-menu';
-const { SlideInMenu } = renderers;
+import ActionSheet from 'react-native-actionsheet';
+import { ConfirmDialog } from 'react-native-simple-dialogs';
 
 export default class MyChatsScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
-
-  openMenu(item) {
-    this.setState({menuItem: item});
-    this.menu.open();
-  }
-
-  onRef = r => {
-    this.menu = r;
-  }
-
-  onOptionSelect(value) {
-    if (value === 1) {
-      Alert.alert(
-        'Confirmation',
-        'Are you sure you want to delete this chat?',
-        [
-          {
-            text: 'Cancel',
-            onPress: () => {},
-            style: 'cancel',
-          },
-          {text: 'Yes', onPress: () =>  this.deleteChat(this.state.menuItem) },
-        ]
-      );
-    }
-    this.menu.close();
-  }
 
   constructor(props) {
     super(props);
@@ -71,8 +36,15 @@ export default class MyChatsScreen extends React.Component {
       myChatsList: [],
       ablyChannels: [],
       update: true,
-      menuItem: null,
+      actionSheetItem: null,
+      actionSheetTitle: '',
+      dialogVisible: false,
     };
+
+    this.onLongPress = this.onLongPress.bind(this);
+    this.onLongPressAction = this.onLongPressAction.bind(this);
+
+    this.longPressActionSheet = null;
 
   };
 
@@ -102,6 +74,25 @@ export default class MyChatsScreen extends React.Component {
     );
   };
 
+  onLongPress(item) {
+    var title = (item.media_type == 'movie' ? item.title : item.name) + ' (' + item.media_type + ')';
+    this.setState({ actionSheetItem: item });
+    this.setState({actionSheetTitle: title});
+    this.longPressActionSheet.show();
+  }
+
+  onLongPressAction(index) {
+    var item = this.state.actionSheetItem;
+    var itemName = item.media_type == 'person' ? item.name : item.title;
+    switch (index) {
+      case 0:
+        this.setState({dialogVisible: true});
+        break;
+      default:
+        break;
+    }
+  }
+
   async deleteChat(item) {
     try {
       var list = await AsyncStorage.getItem('myChatsList');
@@ -115,7 +106,7 @@ export default class MyChatsScreen extends React.Component {
       });
 
       AsyncStorage.setItem('myChatsList', JSON.stringify(list));
-      this.setState({myChatsList: list});
+      this.setState({myChatsList: list.reverse()});
     }
     catch (error) {
       console.log(error);
@@ -150,7 +141,7 @@ export default class MyChatsScreen extends React.Component {
   };
 
   renderItem = ({ item }) => (
-    <TouchableHighlight onPress={() => this.goToChatItem(item)} onLongPress={() => this.openMenu(item)}>
+    <TouchableHighlight onPress={() => this.goToChatItem(item)} onLongPress={() => this.onLongPress(item)}>
       <ListItem
         containerStyle={styles.listItem}
         title={item.media_type == 'movie' ? item.title : item.name}
@@ -243,41 +234,49 @@ export default class MyChatsScreen extends React.Component {
 
   render() {
     return (
-      <MenuProvider
-        backHandler={true}
-        skipInstanceCheck={true}
-        backdrop={{backgroundColor: 'tomato', opacity: 0.5,}}
-        menuProviderWrapper={{backgroundColor: 'tomato'}}
-      >
-        <ScrollView style={styles.container}>
+      <ScrollView style={styles.container}>
 
-            <Menu name={'chatsScreen'} renderer={SlideInMenu} style={styles.chatMenu} onSelect={value => this.onOptionSelect(value)}
-              name="menu-1" ref={this.onRef}>
-              <MenuTrigger/>
-              <MenuOptions>
+        <ActionSheet
+          ref={o => this.longPressActionSheet = o}
+          title={this.state.actionSheetTitle}
+          options={[
+            <Text style={styles.actionSheetTextStyle}>Delete Chat</Text>,
+            <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
+          ]}
+          cancelButtonIndex={1}
+          destructiveButtonIndex={0}
+          onPress={this.onLongPressAction}
+        />
 
-                <MenuOption value={1}>
-                  <Text style={styles.chatMenuOption}>Delete</Text>
-                </MenuOption>
+        <ConfirmDialog
+          title="Confirmation"
+          titleStyle={styles.latoText}
+          dialogStyle={styles.latoText}
+          buttonsStyle={styles.latoText}
+          message="Are you sure want to delete this chat?"
+          visible={this.state.dialogVisible}
+          onTouchOutside={() => this.setState({dialogVisible: false})}
+          positiveButton={{
+              title: "YES",
+              onPress: () => {
+                this.setState({dialogVisible: false});
+                this.deleteChat(this.state.actionSheetItem);
+              }
+          }}
+          negativeButton={{
+              title: "NO",
+              onPress: () => this.setState({dialogVisible: false})
+          }}
+        />
 
-                <MenuOption value={2}>
-                  <Text style={styles.chatMenuOption}>Cancel</Text>
-                </MenuOption>
-
-              </MenuOptions>
-            </Menu>
-
-
-
-          <FlatList
-            keyboardShouldPersistTaps='handled'
-            keyExtractor={this.keyExtractor}
-            data={this.state.myChatsList}
-            extraData={this.state}
-            renderItem={this.renderItem}
-          />
-        </ScrollView>
-      </MenuProvider>
+        <FlatList
+          keyboardShouldPersistTaps='handled'
+          keyExtractor={this.keyExtractor}
+          data={this.state.myChatsList}
+          extraData={this.state}
+          renderItem={this.renderItem}
+        />
+      </ScrollView>
     );
   }
 }
@@ -312,4 +311,14 @@ const styles = StyleSheet.create({
     color: Colors.customYellow,
     fontFamily: 'Lato-Regular',
   },
+  actionSheetTextStyle: {
+    color: 'black',
+    fontSize: 18,
+    fontFamily: 'Lato-Regular',
+  },
+  actionSheetCancelStyle: {
+    color: 'red',
+    fontSize: 18,
+    fontFamily: 'Lato-Regular',
+  }
 });

@@ -16,6 +16,7 @@ import Colors from '../constants/Colors';
 import { Icon } from 'react-native-elements';
 import AsyncStorage from '@react-native-community/async-storage';
 import SplashScreen from 'react-native-splash-screen';
+import Header from '../components/HeaderSettings';
 
 
 var channel;
@@ -32,6 +33,8 @@ export default class MovieChatScreen extends Component {
       username: null,
       txtInput: '',
     };
+
+    this.goBack = this.goBack.bind(this);
   }
 
   componentDidMount() {
@@ -40,6 +43,10 @@ export default class MovieChatScreen extends Component {
       this.setState({ username: value, txtInput: value });
     })
     .done();
+  }
+
+  goBack() {
+    this.props.navigation.goBack(null);
   }
 
   updateUsername = (newUsername) => {
@@ -61,20 +68,18 @@ export default class MovieChatScreen extends Component {
   render() {
 
     var usernameRequired = this.props.noBack == null;
-    var backButton;
-
+    var header;
     if (usernameRequired)
-      backButton = <TouchableOpacity style={{ marginLeft: 6 }} onPress={() => this.props.navigation.goBack(null)}>
-          <Icon
-            name='arrow-back'
-            size={30}
-            color={Colors.customYellow}
-          />
-        </TouchableOpacity>;
+      header =
+      <Header
+        title={'Settings'}
+        goBack={this.goBack}
+      />;
 
     return (
-      <View style={styles.container}>
-        {backButton}
+      <ScrollView style={styles.container}>
+        {header}
+        <Text style={styles.label}>USERNAME</Text>
         <TextInput
           value={this.state.txtInput}
           style={styles.usernameInput}
@@ -82,13 +87,13 @@ export default class MovieChatScreen extends Component {
           onChangeText={txtInput => this.setState({ txtInput })}
         />
 
-        <Button
+        <TouchableOpacity
           style={styles.submitBtn}
           onPress={() => this.updateUsername(this.state.txtInput)}
-          title="DONE"
-          color={Colors.customYellow}
-        />
-      </View>
+        >
+          <Text style={styles.submitBtnText}>DONE</Text>
+        </TouchableOpacity>
+      </ScrollView>
     );
   }
 }
@@ -96,13 +101,16 @@ export default class MovieChatScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   usernameInput: {
     fontSize: 16,
     fontFamily: 'Lato-Regular',
-    width: '50%',
+    width: '80%',
+    height: 45,
+    textAlign: 'center',
+    marginTop: '3%',
+    marginLeft: 'auto',
+    marginRight: 'auto',
     backgroundColor: '#fff',
     borderWidth: 1,
     borderRadius: 10,
@@ -110,7 +118,27 @@ const styles = StyleSheet.create({
     borderColor: Colors.customYellow
   },
   submitBtn: {
-    width: '50',
-    paddingTop: 100,
+    width: '80%',
+    height: 50,
+    borderRadius: 10,
+    marginTop: '3%',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    fontFamily: 'Lato-Regular',
+    backgroundColor: Colors.customYellow,
+  },
+  submitBtnText: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontFamily: 'Lato-Bold',
+    marginTop: 'auto',
+    marginBottom: 'auto',
+  },
+  label: {
+    fontSize: 12,
+    fontFamily: 'Lato-Bold',
+    marginTop: '10%',
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
 });

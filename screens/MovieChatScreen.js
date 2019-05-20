@@ -7,14 +7,29 @@ import {
   ImageBackground,
   TouchableOpacity,
   Alert,
+  Clipboard,
 } from 'react-native';
 import { Icon } from 'react-native-elements';
 
-import { GiftedChat, Actions, Bubble, SystemMessage, Time, Day, Send, LoadEarlier, Composer } from 'react-native-gifted-chat';
+import {
+  GiftedChat,
+  Actions,
+  Bubble,
+  SystemMessage,
+  Time,
+  Day,
+  Send,
+  LoadEarlier,
+  Composer,
+  MessageText,
+} from 'react-native-gifted-chat';
 import Colors from '../constants/Colors';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-community/async-storage';
 import HeaderMovieChat from '../components/HeaderMovieChat';
+import ActionSheet from 'react-native-actionsheet';
+import Communications from 'react-native-communications';
+import { ConfirmDialog } from 'react-native-simple-dialogs';
 
 export default class MovieChatScreen extends React.Component {
 
@@ -36,11 +51,18 @@ export default class MovieChatScreen extends React.Component {
       lastMsgTimestamp: null,
       historyResultPage: null,
       setTopOfMyChatsList: false,
+      currentMessage: null,
+      dialogVisible: false,
     };
 
     this._isMounted = false;
     this.onSend = this.onSend.bind(this);
     this.onReceive = this.onReceive.bind(this);
+    this.onLongPress = this.onLongPress.bind(this);
+    this.onLongPressAction = this.onLongPressAction.bind(this);
+    this.onPressPhoneNumber = this.onPressPhoneNumber.bind(this);
+    this.onPressPhoneNumberAction = this.onPressPhoneNumberAction.bind(this);
+    this.renderMessageText = this.renderMessageText.bind(this);
     this.renderBubble = this.renderBubble.bind(this);
     this.renderComposer = this.renderComposer.bind(this);
     this.renderSystemMessage = this.renderSystemMessage.bind(this);
@@ -53,6 +75,9 @@ export default class MovieChatScreen extends React.Component {
     this.updateUsername = this.updateUsername.bind(this);
     this.deleteChat = this.deleteChat.bind(this);
     this.goBack = this.goBack.bind(this);
+
+    this.longPressActionSheet = null;
+    this.PhoneActionSheet = null;
 
     this.movie = this.props.navigation.state.params.movie;
     this.ablyChannel = null;
@@ -154,18 +179,7 @@ export default class MovieChatScreen extends React.Component {
   };
 
   deleteChat() {
-    Alert.alert(
-      'Confirmation',
-      'Are you sure you want to delete this chat?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => {},
-          style: 'cancel',
-        },
-        {text: 'Yes', onPress: () => this.props.navigation.navigate({ routeName: 'MyChats',  params: { deleteItem: this.movie } })},
-      ]
-    );
+    this.setState({dialogVisible: true});
   };
 
   goBack() {
@@ -358,6 +372,48 @@ export default class MovieChatScreen extends React.Component {
    }
  };
 
+  onLongPress(context, currentMessage) {
+    this.setState({ currentMessage: currentMessage });
+    this.longPressActionSheet.show();
+  }
+
+  onLongPressAction(index) {
+    switch (index) {
+      case 0:
+        Clipboard.setString(this.state.currentMessage.text);
+        break;
+      default:
+        break;
+    }
+  }
+
+  renderMessageText(props) {
+    return (
+      <MessageText
+        {...props}
+      />
+    );
+  }
+
+  onPressPhoneNumber(phone) {
+    this.setState({ currentMessage: phone });
+    this.PhoneActionSheet.show();
+  }
+
+  onPressPhoneNumberAction(index) {
+    var phone = this.state.currentMessage;
+    switch (index) {
+      case 0:
+          Communications.phonecall(phone, true);
+          break;
+      case 1:
+          Communications.text(phone);
+          break;
+      default:
+          break;
+    }
+  }
+
   renderBubble(props) {
     return (
       <Bubble
@@ -513,6 +569,48 @@ export default class MovieChatScreen extends React.Component {
             : 'http://image.tmdb.org/t/p/w300' + this.movie.poster_path)}}
           style={styles.posterImg}
         />
+
+        <ActionSheet
+          ref={o => this.longPressActionSheet = o}
+          options={[
+            <Text style={styles.actionSheetTextStyle}>Copy Text</Text>,
+            <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
+          ]}
+          cancelButtonIndex={1}
+          destructiveButtonIndex={0}
+          onPress={this.onLongPressAction}
+        />
+
+        <ActionSheet
+          ref={o => this.PhoneActionSheet = o}
+          options={[
+            <Text style={styles.actionSheetTextStyle}>Call</Text>,
+            <Text style={styles.actionSheetTextStyle}>Text</Text>,
+            <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
+          ]}
+          cancelButtonIndex={2}
+          destructiveButtonIndex={1}
+          onPress={this.onPressPhoneNumberAction}
+        />
+
+        <ConfirmDialog
+          title="Confirmation"
+          titleStyle={styles.latoText}
+          dialogStyle={styles.latoText}
+          buttonsStyle={styles.latoText}
+          message="Are you sure you want to delete this chat?"
+          visible={this.state.dialogVisible}
+          onTouchOutside={() => this.setState({dialogVisible: false})}
+          positiveButton={{
+              title: "YES",
+              onPress: () => this.props.navigation.navigate({ routeName: 'MyChats',  params: { deleteItem: this.movie } })
+          }}
+          negativeButton={{
+              title: "NO",
+              onPress: () => this.setState({dialogVisible: false})
+          }}
+        />
+
         <GiftedChat
           messages={this.state.messages}
           onSend={this.onSend}
@@ -522,6 +620,11 @@ export default class MovieChatScreen extends React.Component {
 
           user={this.state.user}
 
+          parsePatterns={(linkStyle) => [
+            { type: 'phone', style: linkStyle, onPress: this.onPressPhoneNumber },
+          ]}
+          onLongPress={this.onLongPress}
+          renderMessageText={this.renderMessageText}
           renderBubble={this.renderBubble}
           renderComposer={this.renderComposer}
           renderTime={this.renderTime}
@@ -567,4 +670,17 @@ const styles = StyleSheet.create({
     color: '#aaa',
     fontFamily: 'Lato-Regular',
   },
+  latoText: {
+    fontFamily: 'Lato-Regular',
+  },
+  actionSheetTextStyle: {
+    color: 'black',
+    fontSize: 18,
+    fontFamily: 'Lato-Regular',
+  },
+  actionSheetCancelStyle: {
+    color: 'red',
+    fontSize: 18,
+    fontFamily: 'Lato-Regular',
+  }
 });
