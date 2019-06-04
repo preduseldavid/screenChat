@@ -240,8 +240,7 @@ export default class MyChatsScreen extends React.Component {
           ref={o => this.longPressActionSheet = o}
           title={this.state.actionSheetTitle}
           options={[
-            <Text style={styles.actionSheetTextStyle}>Delete Chat</Text>,
-            <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
+            'Delete Chat', 'cancel',
           ]}
           cancelButtonIndex={1}
           destructiveButtonIndex={0}
