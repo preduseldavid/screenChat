@@ -239,7 +239,7 @@ export default class MyChatsScreen extends React.Component {
         <ActionSheet
           ref={o => this.longPressActionSheet = o}
           title={this.state.actionSheetTitle}
-          options={Platform === 'ios' ? [
+          options={Platform.OS === 'ios' ? [
               'Delete Chat', 'cancel',
             ] : [
               <Text style={styles.actionSheetTextStyle}>Delete Chat</Text>,

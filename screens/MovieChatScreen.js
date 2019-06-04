@@ -573,7 +573,7 @@ export default class MovieChatScreen extends React.Component {
 
         <ActionSheet
           ref={o => this.longPressActionSheet = o}
-          options={Platform === 'ios' ?
+          options={Platform.OS === 'ios' ?
             [
               'Copy Text', 'cancel'
             ] : [
@@ -587,7 +587,7 @@ export default class MovieChatScreen extends React.Component {
 
         <ActionSheet
           ref={o => this.PhoneActionSheet = o}
-          options={Platform === 'ios' ?
+          options={Platform.OS === 'ios' ?
             [
               'Call', 'Text', 'cancel'
             ] : [
