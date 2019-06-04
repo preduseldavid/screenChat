@@ -64,14 +64,20 @@ export default class SearchScreen extends React.Component {
     return (
       <View style={styles.container}>
 
+        <StatusBar
+          backgroundColor={Colors.customYellow}
+          barStyle="dark-content"
+        />
+
         <View
           style={{
-            backgroundColor: Colors.customYellow,
-            height: Platform.OS === 'ios' ? 20 : 0,
+            backgroundColor: '#00BCD4',
+            height: Platform.OS === 'ios' ? 20 : StatusBar.currentHeight,
           }}>
           <StatusBar
-            backgroundColor={Colors.customYellow}
-            barStyle="dark-content"
+            translucent
+            backgroundColor="#00BCD4"
+            barStyle="light-content"
           />
         </View>
 
