@@ -73,10 +73,6 @@ export default class App extends Component<Props> {
       return (
         <MenuProvider>
           <SafeAreaView style={styles.container}>
-            {Platform.OS === 'ios' && <StatusBar
-              backgroundColor={Colors.customYellow}
-              barStyle="dark-content"
-            />}
             <AppNavigator/>
           </SafeAreaView>
         </MenuProvider>
