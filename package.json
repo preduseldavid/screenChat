@@ -13,7 +13,7 @@
     "ably": "^1.1.10",
     "ably-react-native": "^1.1.1",
     "core-js": "^3.1.0",
-    "native-base": "^2.12.1",
+    "native-base": "2.12.1",
     "react": "16.8.3",
     "react-native": "^0.59.8",
     "react-native-actionsheet": "^2.4.2",
@@ -30,7 +30,6 @@
     "react-native-rename": "^2.4.1",
     "react-native-simple-dialogs": "^1.1.0",
     "react-native-splash-screen": "^3.2.0",
-    "react-native-vector-icons": "^6.4.2",
     "react-navigation": "^3.10.1"
   },
   "devDependencies": {

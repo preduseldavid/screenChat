@@ -8,7 +8,6 @@ import com.airbnb.android.react.maps.MapsPackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -36,7 +35,6 @@ public class MainApplication extends Application implements ReactApplication {
             new AsyncStoragePackage(),
             new RNDeviceInfo(),
             new SplashScreenReactPackage(),
-            new VectorIconsPackage(),
             new RNGestureHandlerPackage()
       );
     }
