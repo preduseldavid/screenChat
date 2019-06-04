@@ -77,10 +77,6 @@ export default class App extends Component<Props> {
               backgroundColor: Colors.customYellow,
               height: Platform.OS === 'ios' ? 20 : 0,
             }}>
-            <StatusBar
-              backgroundColor={Colors.customYellow}
-              barStyle="dark-content"
-            />
           </View>
           <SafeAreaView style={styles.container}>
             <AppNavigator/>

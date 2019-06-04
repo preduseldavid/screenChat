@@ -69,18 +69,6 @@ export default class SearchScreen extends React.Component {
           barStyle="dark-content"
         />
 
-        <View
-          style={{
-            backgroundColor: '#00BCD4',
-            height: Platform.OS === 'ios' ? 20 : StatusBar.currentHeight,
-          }}>
-          <StatusBar
-            translucent
-            backgroundColor="#00BCD4"
-            barStyle="light-content"
-          />
-        </View>
-
         <HideWithKeyboard>
           <Image style={styles.searchLogo} source={require('../assets/images/logo-full.png')} />
         </HideWithKeyboard>
