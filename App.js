@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, StatusBar, Text, View} from 'react-native';
+import {Platform, StyleSheet, StatusBar, Text, View, SafeAreaView} from 'react-native';
 import AppNavigator from './navigation/AppNavigator';
 import SplashScreen from 'react-native-splash-screen';
 import Username from './screens/SettingsScreen';
@@ -72,13 +72,13 @@ export default class App extends Component<Props> {
     if (this.state.username != null)
       return (
         <MenuProvider>
-          <View style={styles.container}>
+          <SafeAreaView style={styles.container}>
             {Platform.OS === 'ios' && <StatusBar
               backgroundColor={Colors.customYellow}
               barStyle="dark-content"
             />}
             <AppNavigator/>
-          </View>
+          </SafeAreaView>
         </MenuProvider>
       );
     else
