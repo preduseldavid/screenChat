@@ -72,6 +72,10 @@ export default class App extends Component<Props> {
     if (this.state.username != null)
       return (
         <MenuProvider>
+        {Platform.OS === 'ios' && <StatusBar
+          backgroundColor={Colors.customYellow}
+          barStyle="dark-content"
+        />}
           <SafeAreaView style={styles.container}>
             <AppNavigator/>
           </SafeAreaView>
