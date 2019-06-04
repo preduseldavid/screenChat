@@ -573,9 +573,12 @@ export default class MovieChatScreen extends React.Component {
 
         <ActionSheet
           ref={o => this.longPressActionSheet = o}
-          options={[
-            <Text style={styles.actionSheetTextStyle}>Copy Text</Text>,
-            <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
+          options={Platform === 'ios' ?
+            [
+              'Copy Text', 'cancel'
+            ] : [
+              <Text style={styles.actionSheetTextStyle}>Copy Text</Text>,
+              <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
           ]}
           cancelButtonIndex={1}
           destructiveButtonIndex={0}
@@ -584,7 +587,10 @@ export default class MovieChatScreen extends React.Component {
 
         <ActionSheet
           ref={o => this.PhoneActionSheet = o}
-          options={[
+          options={Platform === 'ios' ?
+            [
+              'Call', 'Text', 'cancel'
+            ] : [
             <Text style={styles.actionSheetTextStyle}>Call</Text>,
             <Text style={styles.actionSheetTextStyle}>Text</Text>,
             <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
