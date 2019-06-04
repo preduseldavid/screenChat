@@ -7,13 +7,14 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import {Platform, StyleSheet, StatusBar, Text, View} from 'react-native';
 import AppNavigator from './navigation/AppNavigator';
 import SplashScreen from 'react-native-splash-screen';
 import Username from './screens/SettingsScreen';
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import { MenuProvider } from 'react-native-popup-menu';
+import Colors from './constants/Colors';
 
 
  // Igonore warnings
@@ -72,6 +73,10 @@ export default class App extends Component<Props> {
       return (
         <MenuProvider>
           <View style={styles.container}>
+            {Platform.OS === 'ios' && <StatusBar
+              backgroundColor={Colors.customYellow}
+              barStyle="dark-content"
+            />}
             <AppNavigator/>
           </View>
         </MenuProvider>
