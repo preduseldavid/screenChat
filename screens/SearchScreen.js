@@ -63,7 +63,18 @@ export default class SearchScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        
+
+        <View
+          style={{
+            backgroundColor: {Colors.customYellow},
+            height: Platform.OS === 'ios' ? 20 : 0,
+          }}>
+          <StatusBar
+            backgroundColor={Colors.customYellow}
+            barStyle="dark-content"
+          />
+        </View>
+
         <HideWithKeyboard>
           <Image style={styles.searchLogo} source={require('../assets/images/logo-full.png')} />
         </HideWithKeyboard>
