@@ -34,8 +34,10 @@ export default class App extends Component<Props> {
     this.state = {
       username: null,
       uniqueId: DeviceInfo.getUniqueID(),
+      statusBarColor: '',
     };
     this.updateUsername = this.updateUsername.bind(this);
+    this.changeStatusBarColor = this.changeStatusBarColor.bind(this);
   }
 
   componentDidMount() {
@@ -66,17 +68,20 @@ export default class App extends Component<Props> {
     this.setState({ username: newUsername });
   };
 
+  changeStatusBarColor = (color) => {
+    this.setState({ statusBarColor: color });
+  };
+
 
 
   render() {
-    alert();
     if (this.state.username != null)
       return (
         <MenuProvider>
           <Fragment>
-            <SafeAreaView style={{ flex: 0, backgroundColor: 'red' }} />
+            <SafeAreaView style={{ flex: 0, backgroundColor: this.state.statusBarColor }} />
             <SafeAreaView style={styles.container}>
-              <AppNavigator/>
+              <AppNavigator changeStatusBarColor={this.changeStatusBarColor}/>
             </SafeAreaView>
           </Fragment>
         </MenuProvider>
