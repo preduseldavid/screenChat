@@ -10,8 +10,7 @@ import {
   View,
   Button,
   FlatList,
-  StatusBar,
-  SafeAreaView
+  StatusBar
 } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import Colors from '../constants/Colors';
@@ -63,7 +62,7 @@ export default class SearchScreen extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
 
         <StatusBar
           backgroundColor={Colors.customYellow}
@@ -94,7 +93,7 @@ export default class SearchScreen extends React.Component {
           />
         </View>
 
-      </SafeAreaView>
+      </View>
     );
   }
 

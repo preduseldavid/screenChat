@@ -69,14 +69,15 @@ export default class App extends Component<Props> {
 
 
   render() {
+    alert(this.props.navigation.state.routeName);
     if (this.state.username != null)
       return (
         <MenuProvider>
           <Fragment>
-
-            <View style={styles.container}>
+            <SafeAreaView style={{ flex: 0, backgroundColor: 'red' }} />
+            <SafeAreaView style={styles.container}>
               <AppNavigator/>
-            </View>
+            </SafeAreaView>
           </Fragment>
         </MenuProvider>
       );
