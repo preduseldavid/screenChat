@@ -6,7 +6,7 @@
  * @flow
  */
 
-import React, {Component} from 'react';
+import React, {Component, Fragment} from 'react';
 import {Platform, StyleSheet, StatusBar, Text, View, SafeAreaView} from 'react-native';
 import AppNavigator from './navigation/AppNavigator';
 import SplashScreen from 'react-native-splash-screen';
@@ -72,9 +72,12 @@ export default class App extends Component<Props> {
     if (this.state.username != null)
       return (
         <MenuProvider>
-          <SafeAreaView style={styles.container}>
-            <AppNavigator/>
-          </SafeAreaView>
+          <Fragment>
+            <SafeAreaView style={{ flex: 0, backgroundColor: 'red' }} />
+            <SafeAreaView style={styles.container}>
+              <AppNavigator/>
+            </SafeAreaView>
+          </Fragment>
         </MenuProvider>
       );
     else
@@ -88,6 +91,6 @@ export default class App extends Component<Props> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'blue',
   },
 });
