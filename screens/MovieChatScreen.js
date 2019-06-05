@@ -88,6 +88,25 @@ export default class MovieChatScreen extends React.Component {
 
   componentWillMount() {
     this._isMounted = true;
+
+    // When we enter the screen
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+        payload => {
+          global.changeStatusBarColor(Colors.lightGray3);
+          this.ablySubscribe();
+          this.onLoadEarlier();
+        }
+    );
+
+    // When we leave the screen
+    this.navBlurListener = this.props.navigation.addListener(
+      'didBlur',
+          payload => {
+            this.ablyUnsubscribe();
+          }
+    );
+
     this.setState(() => {
       return {
         messages: [
@@ -121,24 +140,6 @@ export default class MovieChatScreen extends React.Component {
         timestamps = {};
     })
     .done();
-
-    // When we enter the screen
-    this.navFocusListener = this.props.navigation.addListener(
-      'didFocus',
-        payload => {
-          global.changeStatusBarColor(Colors.lightGray3);
-          this.ablySubscribe();
-          this.onLoadEarlier();
-        }
-    );
-
-    // When we leave the screen
-    this.navBlurListener = this.props.navigation.addListener(
-      'didBlur',
-          payload => {
-            this.ablyUnsubscribe();
-          }
-    );
   }
 
   componentWillUnmount() {

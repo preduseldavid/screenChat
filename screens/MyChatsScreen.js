@@ -50,8 +50,6 @@ export default class MyChatsScreen extends React.Component {
   };
 
   componentDidMount = () => {
-    this.retrieveMyChatsList();
-
     this.navFocusListener = this.props.navigation.addListener(
       'didFocus',
           payload => {
@@ -74,6 +72,8 @@ export default class MyChatsScreen extends React.Component {
             //this.unsubscribeFromAll();
           }
     );
+
+    this.retrieveMyChatsList();
   };
 
   onLongPress(item) {
