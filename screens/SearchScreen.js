@@ -64,6 +64,8 @@ export default class SearchScreen extends React.Component {
     return (
       <View style={styles.container}>
 
+      <SafeAreaView style={{ flex: 0, backgroundColor: 'red' }} />
+
         <StatusBar
           backgroundColor={Colors.customYellow}
           barStyle="dark-content"

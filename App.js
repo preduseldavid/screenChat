@@ -73,7 +73,7 @@ export default class App extends Component<Props> {
       return (
         <MenuProvider>
           <Fragment>
-            <SafeAreaView style={{ flex: 0, backgroundColor: 'red' }} />
+            
             <SafeAreaView style={styles.container}>
               <AppNavigator/>
             </SafeAreaView>
