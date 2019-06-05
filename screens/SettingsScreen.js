@@ -40,13 +40,16 @@ export default class MovieChatScreen extends Component {
 
   componentDidMount() {
     // When we enter the screen
-    console.log(this.props.navigation);
-    this.navFocusListener = this.props.navigation.addListener(
-      'didFocus',
-        payload => {
-          global.changeStatusBarColor(Colors.customYellow);
-        }
-    );
+    if (this.props.navigation) {
+      this.navFocusListener = this.props.navigation.addListener(
+        'didFocus',
+          payload => {
+            global.changeStatusBarColor(Colors.customYellow);
+          }
+      );
+    }
+    else
+      global.changeStatusBarColor(Colors.customYellow);
 
     AsyncStorage.getItem("username")
     .then(value => {
