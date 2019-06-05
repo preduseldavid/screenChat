@@ -35,6 +35,7 @@ export default class MovieChatScreen extends Component {
     };
 
     this.goBack = this.goBack.bind(this);
+    this.navFocusListener = null;
   }
 
   componentDidMount() {

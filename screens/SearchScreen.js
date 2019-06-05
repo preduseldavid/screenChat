@@ -29,6 +29,8 @@ export default class SearchScreen extends React.Component {
       searchText: '',
       searchData: [],
     };
+
+    this.navFocusListener = null;
   }
 
   componentDidMount() {

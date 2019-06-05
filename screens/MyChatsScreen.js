@@ -45,13 +45,14 @@ export default class MyChatsScreen extends React.Component {
     this.onLongPressAction = this.onLongPressAction.bind(this);
 
     this.longPressActionSheet = null;
-
+    this.navFocusListener = null;
+    this.navBlurListener = null;
   };
 
   componentDidMount = () => {
     this.retrieveMyChatsList();
 
-    this.props.navigation.addListener(
+    this.navFocusListener = this.props.navigation.addListener(
       'didFocus',
           payload => {
             global.changeStatusBarColor(Colors.customYellow);
@@ -67,11 +68,11 @@ export default class MyChatsScreen extends React.Component {
     );
 
 
-    this.props.navigation.addListener(
-    'didBlur',
-      payload => {
-        //this.unsubscribeFromAll();
-      }
+    this.navBlurListener = this.props.navigation.addListener(
+      'didBlur',
+          payload => {
+            //this.unsubscribeFromAll();
+          }
     );
   };
 
