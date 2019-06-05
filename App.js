@@ -69,7 +69,7 @@ export default class App extends Component<Props> {
 
 
   render() {
-    
+    alert();
     if (this.state.username != null)
       return (
         <MenuProvider>
