@@ -10,7 +10,8 @@ import {
   View,
   Button,
   FlatList,
-  StatusBar
+  StatusBar,
+  SafeAreaView
 } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import Colors from '../constants/Colors';
