@@ -33,7 +33,10 @@ export default class SearchScreen extends React.Component {
   }
 
   componentDidMount() {
-
+    this._navListener = this.props.navigation.addListener('didFocus', () => {
+      StatusBar.setBarStyle('light-content');
+      StatusBar.setBackgroundColor('tomato');
+    });
   }
 
   _getUsername = () => {
@@ -64,13 +67,6 @@ export default class SearchScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-
-      <SafeAreaView style={{ flex: 0, backgroundColor: 'red' }} />
-
-        <StatusBar
-          backgroundColor={Colors.customYellow}
-          barStyle="dark-content"
-        />
 
         <HideWithKeyboard>
           <Image style={styles.searchLogo} source={require('../assets/images/logo-full.png')} />
