@@ -134,10 +134,10 @@ export default class MovieChatScreen extends React.Component {
 
     // When we leave the screen
     this.navBlurListener = this.props.navigation.addListener(
-    'didBlur',
-      payload => {
-        this.ablyUnsubscribe();
-      }
+      'didBlur',
+          payload => {
+            this.ablyUnsubscribe();
+          }
     );
   }
 
