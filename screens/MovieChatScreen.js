@@ -583,7 +583,7 @@ export default class MovieChatScreen extends React.Component {
               <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
           ]}
           cancelButtonIndex={1}
-          destructiveButtonIndex={0}
+          destructiveButtonIndex={1}
           onPress={this.onLongPressAction}
         />
 
@@ -598,7 +598,7 @@ export default class MovieChatScreen extends React.Component {
             <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
           ]}
           cancelButtonIndex={2}
-          destructiveButtonIndex={1}
+          destructiveButtonIndex={2}
           onPress={this.onPressPhoneNumberAction}
         />
 

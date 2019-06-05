@@ -248,7 +248,7 @@ export default class MyChatsScreen extends React.Component {
               <Text style={styles.actionSheetCancelStyle}>cancel</Text>,
           ]}
           cancelButtonIndex={1}
-          destructiveButtonIndex={0}
+          destructiveButtonIndex={1}
           onPress={this.onLongPressAction}
         />
 
