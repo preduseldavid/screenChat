@@ -38,6 +38,7 @@ export default class App extends Component<Props> {
     };
     this.updateUsername = this.updateUsername.bind(this);
     this.changeStatusBarColor = this.changeStatusBarColor.bind(this);
+    global.changeStatusBarColor = this.changeStatusBarColor;
   }
 
   componentDidMount() {
@@ -81,7 +82,7 @@ export default class App extends Component<Props> {
           <Fragment>
             <SafeAreaView style={{ flex: 0, backgroundColor: this.state.statusBarColor }} />
             <SafeAreaView style={styles.container}>
-              <AppNavigator changeStatusBarColor={this.changeStatusBarColor}/>
+              <AppNavigator/>
             </SafeAreaView>
           </Fragment>
         </MenuProvider>

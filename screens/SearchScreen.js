@@ -32,7 +32,7 @@ export default class SearchScreen extends React.Component {
   }
 
   componentDidMount() {
-
+    global.changeStatusBarColor(Colors.customYellow);
   }
 
   _getUsername = () => {
