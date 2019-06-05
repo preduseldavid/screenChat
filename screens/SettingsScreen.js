@@ -38,6 +38,7 @@ export default class MovieChatScreen extends Component {
   }
 
   componentDidMount() {
+    global.changeStatusBarColor(Colors.customYellow);
     AsyncStorage.getItem("username")
     .then(value => {
       this.setState({ username: value, txtInput: value });

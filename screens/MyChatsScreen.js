@@ -49,6 +49,7 @@ export default class MyChatsScreen extends React.Component {
   };
 
   componentDidMount = () => {
+    global.changeStatusBarColor(Colors.customYellow);
     this.retrieveMyChatsList();
 
     this.props.navigation.addListener(

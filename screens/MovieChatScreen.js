@@ -138,6 +138,8 @@ export default class MovieChatScreen extends React.Component {
         this.ablyUnsubscribe();
       }
     );
+
+    global.changeStatusBarColor(Colors.lightGray3);
   }
 
   componentWillUnmount() {
