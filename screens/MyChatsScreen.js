@@ -49,21 +49,21 @@ export default class MyChatsScreen extends React.Component {
   };
 
   componentDidMount = () => {
-    global.changeStatusBarColor(Colors.customYellow);
     this.retrieveMyChatsList();
 
     this.props.navigation.addListener(
-    'didFocus',
-      payload => {
-        this.retrieveMyChatsList();
-        var navParams = this.props.navigation.state.params;
-        if (navParams) {
-          if (navParams.deleteItem)
-            this.deleteChat(navParams.deleteItem);
-          if (navParams.setTopOfMyChatsList)
-            this.setTopOfMyChatsList(navParams.setTopOfMyChatsList);
+      'didFocus',
+          payload => {
+            global.changeStatusBarColor(Colors.customYellow);
+            this.retrieveMyChatsList();
+            var navParams = this.props.navigation.state.params;
+            if (navParams) {
+              if (navParams.deleteItem)
+                this.deleteChat(navParams.deleteItem);
+              if (navParams.setTopOfMyChatsList)
+                this.setTopOfMyChatsList(navParams.setTopOfMyChatsList);
+            }
         }
-      }
     );
 
 

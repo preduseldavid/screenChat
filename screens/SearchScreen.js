@@ -32,7 +32,13 @@ export default class SearchScreen extends React.Component {
   }
 
   componentDidMount() {
-    global.changeStatusBarColor(Colors.customYellow);
+    // When we enter the screen
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+        payload => {
+          global.changeStatusBarColor(Colors.customYellow);
+        }
+    );
   }
 
   _getUsername = () => {

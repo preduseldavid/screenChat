@@ -124,11 +124,12 @@ export default class MovieChatScreen extends React.Component {
 
     // When we enter the screen
     this.navFocusListener = this.props.navigation.addListener(
-    'didFocus',
-      payload => {
-        this.ablySubscribe();
-        this.onLoadEarlier();
-      }
+      'didFocus',
+        payload => {
+          global.changeStatusBarColor(Colors.lightGray3);
+          this.ablySubscribe();
+          this.onLoadEarlier();
+        }
     );
 
     // When we leave the screen
@@ -138,8 +139,6 @@ export default class MovieChatScreen extends React.Component {
         this.ablyUnsubscribe();
       }
     );
-
-    global.changeStatusBarColor(Colors.lightGray3);
   }
 
   componentWillUnmount() {
