@@ -7,6 +7,7 @@ import { Icon } from 'react-native-elements';
 import TabBarIcon from '../components/TabBarIcon';
 import SearchScreen from '../screens/SearchScreen';
 import MyChatsScreen from '../screens/MyChatsScreen';
+import TrendingScreen from '../screens/TrendingScreen';
 
 import Colors from '../constants/Colors';
 
@@ -16,6 +17,14 @@ const SearchStack = createStackNavigator({
 
 SearchStack.navigationOptions = {
   tabBarLabel: 'SEARCH',
+};
+
+const TrendingStack = createStackNavigator({
+  Trending: TrendingScreen,
+});
+
+TrendingStack.navigationOptions = {
+  tabBarLabel: 'TRENDING',
 };
 
 const MyChatsStack = createStackNavigator({
@@ -51,5 +60,6 @@ const tabBarOptions = {
 
 export default createMaterialTopTabNavigator({
   SearchStack,
+  TrendingStack,
   MyChatsStack,
 }, tabBarOptions);
