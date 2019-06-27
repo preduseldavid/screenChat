@@ -50,11 +50,17 @@ export default class HeaderMovieChat extends React.Component {
         </MenuTrigger>
 
         <MenuOptions>
+          <MenuOption onSelect={this.props.deleteChat} >
+            <Text style={styles.chatMenuOption}>Delete Chat</Text>
+          </MenuOption>
           <MenuOption onSelect={this.props.goToSettings} >
             <Text style={styles.chatMenuOption}>Settings</Text>
           </MenuOption>
-          <MenuOption onSelect={this.props.deleteChat} >
-            <Text style={styles.chatMenuOption}>Delete Chat</Text>
+          <MenuOption onSelect={this.props.goToTermsOfUse} >
+            <Text style={styles.chatMenuOption}>Terms Of Use</Text>
+          </MenuOption>
+          <MenuOption onSelect={this.props.goToPrivacyPolicy} >
+            <Text style={styles.chatMenuOption}>Privacy Policy</Text>
           </MenuOption>
         </MenuOptions>
       </Menu>

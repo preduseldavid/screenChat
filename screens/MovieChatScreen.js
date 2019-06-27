@@ -73,6 +73,8 @@ export default class MovieChatScreen extends React.Component {
     this.renderSend = this.renderSend.bind(this);
     this.renderLoadEarlier = this.renderLoadEarlier.bind(this);
     this.goToSettings = this.goToSettings.bind(this);
+    this.goToTermsOfUse = this.goToTermsOfUse.bind(this);
+    this.goToPrivacyPolicy = this.goToPrivacyPolicy.bind(this);
     this.updateUsername = this.updateUsername.bind(this);
     this.deleteChat = this.deleteChat.bind(this);
     this.goBack = this.goBack.bind(this);
@@ -175,6 +177,18 @@ export default class MovieChatScreen extends React.Component {
     }});
   };
 
+  goToTermsOfUse() {
+    this.props.navigation.navigate({ routeName: 'TermsOfUse', params: {
+      redirectSuccess: 'TermsOfUse',
+    }});
+  };
+
+  goToPrivacyPolicy() {
+    this.props.navigation.navigate({ routeName: 'PrivacyPolicy', params: {
+      redirectSuccess: 'PrivacyPolicy',
+    }});
+  };
+
   updateUsername(value) {
     var obj = this.state.user;
     obj.name = value;
@@ -203,7 +217,6 @@ export default class MovieChatScreen extends React.Component {
 
     if (this.state.historyResultPage) {
       this.state.historyResultPage.next((err, nextPage) => {
-        console.log(nextPage);
         if (!nextPage) return;
         var length = nextPage.items.length;
         var messages = [];
@@ -269,7 +282,6 @@ export default class MovieChatScreen extends React.Component {
   }
 
   onReceive(message) {
-    console.log(message);
     this.setState((previousState) => {
       return {
         messages: GiftedChat.append(previousState.messages, {
@@ -290,7 +302,6 @@ export default class MovieChatScreen extends React.Component {
     let channelName = 'screenChat:dev_en_' + (currentMovie.id).toString();
     this.ablyChannel = global.ably.channels.get(channelName);
 
-    console.log(channelName);
     // Get live message
     this.ablyChannel.subscribe(msg => {
       msg.data = JSON.parse(msg.data);
@@ -320,11 +331,8 @@ export default class MovieChatScreen extends React.Component {
 
     for (var i = 0; i < messages.length; ++i) {
       this.ablyChannel.publish('', JSON.stringify(messages[i]), function(err) {
-        if(err) {
+        if(err)
           console.log('Unable to publish message; err = ' + err.message);
-        } else {
-          console.log('Message successfully sent');
-        }
       });
     }
   }
@@ -361,7 +369,6 @@ export default class MovieChatScreen extends React.Component {
   async updateLastMsgTimestamp(timestamp) {
     if (this.state.lastMsgTimestamp == null ||
       this.state.lastMsgTimestamp < timestamp) {
-      console.log(timestamp);
       this.setState({lastMsgTimestamp: timestamp});
 
       var timestamps = await AsyncStorage.getItem('msgTimestamps');
@@ -371,7 +378,6 @@ export default class MovieChatScreen extends React.Component {
         timestamps = {};
      timestamps[this.movie.id.toString()] = timestamp;
      await AsyncStorage.setItem('msgTimestamps', JSON.stringify(timestamps));
-     console.log(timestamps);
    }
  };
 
@@ -565,6 +571,8 @@ export default class MovieChatScreen extends React.Component {
           goBack={this.goBack}
           deleteChat={this.deleteChat}
           goToSettings={this.goToSettings}
+          goToTermsOfUse={this.goToTermsOfUse}
+          goToPrivacyPolicy={this.goToPrivacyPolicy}
         />
         <ImageBackground
           source={{ uri: (this.movie.media_type == 'person'
@@ -605,17 +613,18 @@ export default class MovieChatScreen extends React.Component {
         <ConfirmDialog
           title="Confirmation"
           titleStyle={styles.latoText}
-          dialogStyle={styles.latoText}
-          buttonsStyle={styles.latoText}
-          message="Are you sure you want to delete this chat?"
+          contentStyle={styles.latoText}
+          message="   Are you sure you want to delete this chat?"
           visible={this.state.dialogVisible}
           onTouchOutside={() => this.setState({dialogVisible: false})}
           positiveButton={{
               title: "YES",
+              titleStyle: styles.latoText,
               onPress: () => this.props.navigation.navigate({ routeName: 'MyChats',  params: { deleteItem: this.movie } })
           }}
           negativeButton={{
               title: "NO",
+              titleStyle: styles.latoText,
               onPress: () => this.setState({dialogVisible: false})
           }}
         />
@@ -685,6 +694,7 @@ const styles = StyleSheet.create({
   },
   latoText: {
     fontFamily: 'Lato-Regular',
+    textAlign: 'center',
   },
   actionSheetTextStyle: {
     color: 'black',

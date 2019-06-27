@@ -161,7 +161,6 @@ export default class MyChatsScreen extends React.Component {
   addChatList = (newChat) => {
     var chatsList = this.state.myChatsList;
     chatsList.push(newChat);
-    console.log(chatsList);
     this.setState({ myChatsList: chatsList });
   }
 
@@ -174,8 +173,6 @@ export default class MyChatsScreen extends React.Component {
         list = JSON.parse(list);
       else
         list = [];
-
-      console.log(list);
 
       this.setState({myChatsList: list.reverse()});
     } catch (error) {
@@ -209,9 +206,7 @@ export default class MyChatsScreen extends React.Component {
                 this.setState({update: !this.state.update});
 
                 if (!hasNewMessages) {
-                  console.log('SET update for ' + item.id);
                   channel.subscribe(msg => {
-                    console.log(msg);
                     item.hasNewMessages = true;
                     this.setState({update: !this.state.update});
                     channel.unsubscribe();
@@ -255,13 +250,13 @@ export default class MyChatsScreen extends React.Component {
         <ConfirmDialog
           title="Confirmation"
           titleStyle={styles.latoText}
-          dialogStyle={styles.latoText}
-          buttonsStyle={styles.latoText}
-          message="Are you sure want to delete this chat?"
+          contentStyle={styles.latoText}
+          message="   Are you sure want to delete this chat?"
           visible={this.state.dialogVisible}
           onTouchOutside={() => this.setState({dialogVisible: false})}
           positiveButton={{
               title: "YES",
+              titleStyle: styles.latoText,
               onPress: () => {
                 this.setState({dialogVisible: false});
                 this.deleteChat(this.state.actionSheetItem);
@@ -269,6 +264,7 @@ export default class MyChatsScreen extends React.Component {
           }}
           negativeButton={{
               title: "NO",
+              titleStyle: styles.latoText,
               onPress: () => this.setState({dialogVisible: false})
           }}
         />
@@ -324,5 +320,9 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 18,
     fontFamily: 'Lato-Regular',
-  }
+  },
+  latoText: {
+    fontFamily: 'Lato-Regular',
+    textAlign: 'center',
+  },
 });

@@ -16,13 +16,13 @@ import Colors from '../constants/Colors';
 import { Icon } from 'react-native-elements';
 import AsyncStorage from '@react-native-community/async-storage';
 import SplashScreen from 'react-native-splash-screen';
-import Header from '../components/HeaderSettings';
+import Header from '../components/HeaderCustom';
 
 
 var channel;
 var MovieChatScreenGlobal;
 
-export default class MovieChatScreen extends Component {
+export default class SettingsScreen extends Component {
   static navigationOptions = {
     header: null,
   };
@@ -66,7 +66,6 @@ export default class MovieChatScreen extends Component {
     if (newUsername == '')
       return;
 
-    console.log(newUsername);
     AsyncStorage.setItem("username", newUsername);
     this.setState({ username: newUsername });
     if (this.props.navigation) {

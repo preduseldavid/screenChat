@@ -4,6 +4,8 @@ import { createAppContainer, createSwitchNavigator, createStackNavigator, StackA
 import MainTabNavigator from './MainTabNavigator';
 import MovieChatScreen from '../screens/MovieChatScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import TermsOfUseScreen from '../screens/TermsOfUseScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 
 import Colors from '../constants/Colors';
 import { Icon, Image } from 'react-native-elements';
@@ -20,12 +22,20 @@ const styles = StyleSheet.create({
   },
 });
 
-const UsernameStack = createStackNavigator({
+const SettingsStack = createStackNavigator({
   Username: SettingsScreen,
 });
 
 const MovieChatStack = createStackNavigator({
   MovieChat: MovieChatScreen
+});
+
+const TermsOfUseStack = createStackNavigator({
+  TermsOfUse: TermsOfUseScreen
+});
+
+const PrivacyPolicyStack = createStackNavigator({
+  PrivacyPolicy: PrivacyPolicyScreen
 });
 
 const MainStack = createStackNavigator({
@@ -36,7 +46,9 @@ const MainStack = createStackNavigator({
     },
   },
   MovieChatStack,
-  UsernameStack,
+  SettingsStack,
+  TermsOfUseStack,
+  PrivacyPolicyStack,
 },
 {
     headerMode: 'none',

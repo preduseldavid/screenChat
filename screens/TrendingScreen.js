@@ -74,7 +74,7 @@ export default class TrendingScreen extends React.Component {
       item.media_type = 'tv';
 
     return (
-      <TouchableHighlight onPress={() => this.goToChatItem(item)} onLongPress={() => this.onLongPress(item)}>
+      <TouchableHighlight onPress={() => this.goToChatItem(item)}>
         <ListItem
           containerStyle={styles.listItem}
           title={item.media_type == 'movie' ? item.title : item.name}
@@ -100,7 +100,7 @@ export default class TrendingScreen extends React.Component {
           //isLoading: false,
           trendingList: responseJson.results,
         }, function(){
-          console.log(responseJson);
+
         });
 
       })

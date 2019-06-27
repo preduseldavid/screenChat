@@ -17,6 +17,7 @@ import Colors from '../constants/Colors';
 import { ListItem } from 'react-native-elements';
 import HideWithKeyboard from 'react-native-hide-with-keyboard';
 import SplashScreen from 'react-native-splash-screen';
+import { ConfirmDialog } from 'react-native-simple-dialogs';
 
 export default class SearchScreen extends React.Component {
   static navigationOptions = {
@@ -28,6 +29,8 @@ export default class SearchScreen extends React.Component {
     this.state = {
       searchText: '',
       searchData: [],
+      goToItem: null,
+      dialogVisible: false,
     };
 
     this.navFocusListener = null;
@@ -78,8 +81,30 @@ export default class SearchScreen extends React.Component {
         />
 
         <HideWithKeyboard>
-          <Image style={styles.searchLogo} source={require('../assets/images/logo-full.png')} />
+          <Image style={styles.searchLogo} source={require('../assets/images/logo-1024.png')} />
         </HideWithKeyboard>
+
+        <ConfirmDialog
+          title="Adult Content"
+          titleStyle={styles.latoText}
+          contentStyle={styles.latoText}
+          message="   This chat will contain adult content, by continuing you declare that you are at least 18 years old."
+          visible={this.state.dialogVisible}
+          onTouchOutside={() => this.setState({dialogVisible: false})}
+          positiveButton={{
+              title: "CONTINUE",
+              titleStyle: styles.latoText,
+              onPress: () => {
+                this.setState({dialogVisible: false});
+                this.props.navigation.navigate({ routeName: 'MovieChat',  params: { movie: this.state.goToItem } });
+              }
+          }}
+          negativeButton={{
+              title: "BACK",
+              titleStyle: styles.latoText,
+              onPress: () => this.setState({dialogVisible: false})
+          }}
+        />
 
         <View style={styles.searchContainer}>
           <SearchBar
@@ -106,7 +131,13 @@ export default class SearchScreen extends React.Component {
   }
 
   _goToSearchItem = (item) => {
-    this.props.navigation.navigate({ routeName: 'MovieChat',  params: { movie: item } })
+    if (item.adult)
+      this.setState({
+        dialogVisible: true,
+        goToItem: item,
+      });
+    else
+      this.props.navigation.navigate({ routeName: 'MovieChat',  params: { movie: item } });
   };
 
   _searchBarChange = (text) => {
@@ -133,7 +164,6 @@ export default class SearchScreen extends React.Component {
           //isLoading: false,
           searchData: responseJson.results,
         }, function(){
-          console.log(responseJson);
         });
 
       })
@@ -175,8 +205,7 @@ const styles = StyleSheet.create({
   },
   searchLogo: {
     alignSelf: 'center',
-    width: '60%',
-    height: 80,
+    height: 100,
     resizeMode: 'contain',
     marginTop: 40,
   },
@@ -193,5 +222,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.customYellow,
     fontFamily: 'Lato-Regular',
+  },
+  latoText: {
+    fontFamily: 'Lato-Regular',
+    textAlign: 'center',
   },
 });
